@@ -40,7 +40,7 @@ namespace VnHarry_Twisted_Fate
             TwistedFateMenu = MainMenu.AddMenu("VnHarry Twisted Fate", "tf");
             TwistedFateMenu.AddGroupLabel("Twisted Fate");
             TwistedFateMenu.AddSeparator();
-            TwistedFateMenu.AddLabel("VnHarry Twisted Fate V1.0.0.0");
+            TwistedFateMenu.AddLabel("VnHarry Twisted Fate V1.0.0.1");
 
             //Q Menu
             QMenu = TwistedFateMenu.AddSubMenu("Q - Wildcards", "qsettings");
@@ -56,7 +56,7 @@ namespace VnHarry_Twisted_Fate
             WMenu.Add("wmenu.red", new KeyBind("Select Red", false, KeyBind.BindTypes.HoldActive, 'T'));
 
             LaneClearMenu = TwistedFateMenu.AddSubMenu("LaneClear Settings", "laneclearsettings");
-            LaneClearMenu.Add("laneclear.mana", new Slider("Mana manager (%)", 20, 0, 100));
+            LaneClearMenu.Add("laneclear.mana", new Slider("Mana manager (%)", 50, 0, 100));
             
             //DrawingsMenu
             DrawingsMenu = TwistedFateMenu.AddSubMenu("Drawings Settings", "drawingsmenu");
@@ -118,7 +118,7 @@ namespace VnHarry_Twisted_Fate
                     if ((pred.HitChance == HitChance.Immobile && autoQI) ||
                         (pred.HitChance == HitChance.Dashing && autoQD))
                     {
-                        Q.Cast(enemy);
+                        Q.Cast(pred.CastPosition);
                     }
                 }
             }
