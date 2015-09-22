@@ -147,7 +147,6 @@ namespace VnHarry_AIO.Marksman
         {
             //Chat.Print("Clear");
             //var target = VnHarryWalker.GetTarget();
-            //Chat.Print("ten ne: " + target.Name);
             
             var minionList = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Program._Player.ServerPosition.To2D(), Program._Player.AttackRange + 500);
             foreach (Obj_AI_Minion minion in minionList)
@@ -158,23 +157,17 @@ namespace VnHarry_AIO.Marksman
                     if (minion.Health <= Program._Player.GetAutoAttackDamage(minion, true))
                     {
                        
-
                         if (minion != null && (VnHarryWalker.CanAttack || VnHarryWalker.HaveCancled) && VnHarryWalker.IsAllowedToAttack())
-                        {
-                          
+                        {                       
                                 if (Variables.HarassMode)
                                 {
                                     Player.IssueOrder(GameObjectOrder.AttackUnit, minion);
                                     VnHarryWalker._lastAaTick = Environment.TickCount + Game.Ping / 2;
-                                    
                                 }
                             
                         }
-                        
-                       
-                        //Chat.Print("ten ne: " + minion.Name);
+                                             
                     }
-
 
                 }
             }
