@@ -63,7 +63,6 @@ namespace VnHarry_AIO.Marksman
         }
         public static float GetComboDamage(Obj_AI_Base enemy)
         {
-            //Chat.Print("GetComboDamage");
             var damage = 0f;
 
             if (_Q.IsReady())
@@ -74,8 +73,6 @@ namespace VnHarry_AIO.Marksman
 
             if (_E.IsReady())
                 damage += RDamage(enemy);
-
-            Chat.Print("GetComboDamage: " + damage.ToString());
 
             return (float)damage;
         }
@@ -112,21 +109,19 @@ namespace VnHarry_AIO.Marksman
         }
         public override void Game_OnTick(EventArgs args)
         {
-            //var target = VnHarryWalker.GetTarget();
-            //Chat.Print("ten ne: " + target.Name);
 
-            //if (_Q.IsReady())
-            //{
-            //    foreach (var enemy in HeroManager.Enemies.Where(o => o.IsValidTarget(_Q.Range) && !o.IsDead && !o.IsZombie))
-            //    {
-            //        var pred = _Q.GetPrediction(enemy);
-            //        if ((pred.HitChance == HitChance.Immobile) ||
-            //            (pred.HitChance == HitChance.Dashing))
-            //        {
-            //            _Q.Cast(pred.CastPosition);
-            //        }
-            //    }
-            //}
+            if (_Q.IsReady())
+            {
+                foreach (var enemy in HeroManager.Enemies.Where(o => o.IsValidTarget(_Q.Range) && !o.IsDead && !o.IsZombie))
+                {
+                    var pred = _Q.GetPrediction(enemy);
+                    if ((pred.HitChance == HitChance.Immobile) ||
+                        (pred.HitChance == HitChance.Dashing))
+                   {
+                        _Q.Cast(pred.CastPosition);
+                  }
+                }
+            }
 
             if (Variables.ComboMode)
             {
@@ -219,25 +214,25 @@ namespace VnHarry_AIO.Marksman
             var useE = Variables.Config["commbo.e"].Cast<CheckBox>().CurrentValue;
             var useR = Variables.Config["commbo.r"].Cast<CheckBox>().CurrentValue;
 
-            var qTarget = TargetSelector2.GetTarget(_Q.Range, DamageType.Physical);
-            var wTarget = TargetSelector2.GetTarget(_W.Range, DamageType.Magical);
-            var rTarget = TargetSelector2.GetTarget(_R.Range, DamageType.Physical);
+            var qTarget = TargetSelector2.GetTarget(_Q.Range + 100, DamageType.Physical);
+            var wTarget = TargetSelector2.GetTarget(_W.Range + 100, DamageType.Magical);
+            var rTarget = TargetSelector2.GetTarget(_R.Range + 100, DamageType.Physical);
 
             var comboDamage = rTarget != null ? GetComboDamage(rTarget) : 0;
 
-            if (_Q.IsReady() && useQ && qTarget.IsValidTarget())
+            if (_Q.IsReady() && useQ)
             {
                 _Q.Cast(qTarget);
             }
-            if (_W.IsReady() && useQ && wTarget.IsValidTarget())
+            if (_W.IsReady() && useQ)
             {
-                _W.Cast(qTarget);
+                _W.Cast(wTarget);
             }
             if (_E.IsReady() && useE)
             {
                 _E.Cast(Game.CursorPos);
             }
-            if (_R.IsReady() && useR && rTarget.IsValidTarget() && (comboDamage > rTarget.Health))
+            if (_R.IsReady() && useR && (comboDamage > rTarget.Health))
             //if (_R.IsReady() && useR && rTarget.IsValidTarget())
             {
                 _R.Cast(rTarget);
