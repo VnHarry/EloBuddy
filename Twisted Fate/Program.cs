@@ -9,6 +9,7 @@ using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Rendering;
 
 namespace VnHarry_Twisted_Fate
 {
@@ -74,14 +75,28 @@ namespace VnHarry_Twisted_Fate
             {
                 if (Program.DrawingsMenu["drawings.q"].Cast<CheckBox>().CurrentValue)
                 {
-                    Drawing.DrawCircle(_Player.Position, Q.Range, System.Drawing.Color.BlueViolet);
+                    new Circle { Color = System.Drawing.Color.BlueViolet, BorderWidth = 1, Radius = Q.Range }.Draw(Player.Instance.Position);
                 }
 
                 if (Program.DrawingsMenu["drawings.r"].Cast<CheckBox>().CurrentValue)
                 {
-                    Drawing.DrawCircle(_Player.Position, 5500, System.Drawing.Color.BlueViolet);
+                    new Circle { Color = System.Drawing.Color.BlueViolet, BorderWidth = 1, Radius = 5500 }.Draw(Player.Instance.Position);
+                }
+                if (true)
+                {
+                    var minionList = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Program._Player.ServerPosition.To2D(), Program._Player.AttackRange + 500);
+                    foreach (Obj_AI_Minion minion in minionList)
+                    {
+                        {
+                            if (minion.Health <= Program._Player.GetAutoAttackDamage(minion, true))
+                                new Circle { Color = System.Drawing.Color.Lime, BorderWidth = 1, Radius = minion.BoundingRadius }.Draw(minion.Position);
+                            else if (minion.Health <= Program._Player.GetAutoAttackDamage(minion, true) * 2)
+                                new Circle { Color = System.Drawing.Color.Gold, BorderWidth = 1, Radius = minion.BoundingRadius }.Draw(minion.Position);
+                        }
+                    }
                 }
             }
+           
         }
 
         private static void Game_OnTick(EventArgs args)

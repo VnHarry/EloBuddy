@@ -69,7 +69,7 @@ namespace VnHarry_Twisted_Fate
         public static float QDamage(Obj_AI_Base target)
         {
             return _Player.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float) (new[] {60, 110, 160, 210, 260}[Program.Q.Level] + 0.65*_Player.FlatMagicDamageMod));
+                (float) (new[] {60, 110, 160, 210, 260}[Program.Q.Level - 1] + 0.65*_Player.FlatMagicDamageMod));
         }
     }
 }
