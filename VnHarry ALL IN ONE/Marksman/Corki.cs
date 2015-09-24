@@ -54,7 +54,7 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.Add("misc.autor", new CheckBox("Auto R"));
             Variables.Config.Add("misc.antigapcloser", new CheckBox("Use W upon Gapcloser", false));
             Variables.Config.AddGroupLabel("Draw");
-            Variables.Config.Add("draw,q", new CheckBox("Draw Q"));
+            Variables.Config.Add("draw.q", new CheckBox("Draw Q"));
             Variables.Config.Add("draw.r", new CheckBox("Draw R"));
         }
 
