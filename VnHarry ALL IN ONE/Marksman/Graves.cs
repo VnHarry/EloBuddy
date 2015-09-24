@@ -4,9 +4,7 @@ using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using SharpDX;
 using System;
-using System.Drawing;
 using System.Linq;
 using VnHarry_AIO.Internal;
 using VnHarry_AIO.Utilities;
@@ -14,12 +12,11 @@ using VnHarry_AIO.Utilities;
 namespace VnHarry_AIO.Marksman
 {
     internal class Graves : PluginBase
-    { 
-
-        public static Spell.Skillshot _Q;
-        public static Spell.Skillshot _W;
-        public static Spell.Active _E;
-        public static Spell.Skillshot _R;
+    {
+        private static Spell.Skillshot _Q;
+        private static Spell.Skillshot _W;
+        private static Spell.Skillshot _E;
+        private static Spell.Skillshot _R;
 
         public Graves()
         {
@@ -32,15 +29,14 @@ namespace VnHarry_AIO.Marksman
             DamageIndicator.Initialize(GetComboDamage);
         }
 
-      
         #region Setup
 
         public override sealed void _SetupSpells()
         {
-            _Q = new Spell.Skillshot(SpellSlot.Q, (int)720f, SkillShotType.Cone, (int)0.25f, (int)2000f, (int)(15f * (float)Math.PI / 180));
+            _Q = new Spell.Skillshot(SpellSlot.Q, (int)720f, SkillShotType.Linear, (int)0.25f, (int)2000f, (int)(15f * (float)Math.PI / 180));
             _W = new Spell.Skillshot(SpellSlot.W, (int)850f, SkillShotType.Circular, (int)0.25f, (int)1650f, (int)250f);
+            _E = new Spell.Skillshot(SpellSlot.E, (uint)Program._Player.GetAutoAttackRange(), SkillShotType.Circular);
             _R = new Spell.Skillshot(SpellSlot.R, (int)1100f, SkillShotType.Linear, (int)0.25f, (int)2100f, (int)100f);
-            _E = new Spell.Active(SpellSlot.E, (int)425f);
         }
 
         public override sealed void _SetupMenu()
@@ -55,12 +51,13 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.AddGroupLabel("LaneClear");
             Variables.Config.Add("laneclear.mana", new Slider("Mana manager (%)", 50, 0, 100));
             Variables.Config.AddGroupLabel("Misc");
-            Variables.Config.Add("misc.antigapcloser", new CheckBox("Use E upon Gapcloser", false));
+            Variables.Config.Add("misc.antigapcloser", new CheckBox("Use E upon Gapcloser", true));
             Variables.Config.AddGroupLabel("Draw");
             Variables.Config.Add("draw.q", new CheckBox("Draw Q"));
             Variables.Config.Add("draw.w", new CheckBox("Draw W"));
             Variables.Config.Add("draw.r", new CheckBox("Draw R"));
         }
+
         public static float GetComboDamage(Obj_AI_Base enemy)
         {
             var damage = 0f;
@@ -71,7 +68,7 @@ namespace VnHarry_AIO.Marksman
             if (_W.IsReady())
                 damage += WDamage(enemy);
 
-            if (_E.IsReady())
+            if (_R.IsReady())
                 damage += RDamage(enemy);
 
             return (float)damage;
@@ -80,18 +77,21 @@ namespace VnHarry_AIO.Marksman
         public static float QDamage(Obj_AI_Base target)
         {
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Physical,
-                (float)(new[] { 60, 90, 120, 150, 180 }[_Q.Level - 1] + 0.75 * Program._Player.FlatPhysicalDamageMod)); 
+                (float)(new[] { 60, 90, 120, 150, 180 }[_Q.Level] + 0.75 * Program._Player.FlatPhysicalDamageMod));
         }
+
         public static float WDamage(Obj_AI_Base target)
         {
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float)(new[] { 60, 110, 160, 210, 260 }[_W.Level - 1] + 0.60 * Program._Player.FlatMagicDamageMod));
+                (float)(new[] { 60, 110, 160, 210, 260 }[_W.Level] + 0.60 * Program._Player.FlatMagicDamageMod));
         }
+
         public static float RDamage(Obj_AI_Base target)
         {
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Physical,
-                (float)(new[] { 200, 400, 550 }[_R.Level - 1] + 1.5 * Program._Player.FlatPhysicalDamageMod));
+                (float)(new[] { 200, 400, 550 }[_R.Level] + 1.5 * Program._Player.FlatPhysicalDamageMod));
         }
+
         #endregion Setup
 
         private void Gapcloser_OnGapCloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
@@ -107,9 +107,10 @@ namespace VnHarry_AIO.Marksman
                 _E.Cast((ObjectManager.Player.Position.Extend(e.End, -1 * _W.Range)).To3D());
             }
         }
+
         public override void Game_OnTick(EventArgs args)
         {
-
+            Orbwalker.ForcedTarget = null;
             if (_Q.IsReady())
             {
                 foreach (var enemy in HeroManager.Enemies.Where(o => o.IsValidTarget(_Q.Range) && !o.IsDead && !o.IsZombie))
@@ -117,9 +118,9 @@ namespace VnHarry_AIO.Marksman
                     var pred = _Q.GetPrediction(enemy);
                     if ((pred.HitChance == HitChance.Immobile) ||
                         (pred.HitChance == HitChance.Dashing))
-                   {
+                    {
                         _Q.Cast(pred.CastPosition);
-                  }
+                    }
                 }
             }
 
@@ -136,41 +137,15 @@ namespace VnHarry_AIO.Marksman
                 Clear();
                 Jungle();
             }
-
         }
+
         private void Jungle()
         {
-            //code here  
+            //code here
         }
 
         private void Clear()
         {
-            //Chat.Print("Clear");
-            //var target = VnHarryWalker.GetTarget();
-            
-            var minionList = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Program._Player.ServerPosition.To2D(), Program._Player.AttackRange + 500);
-            foreach (Obj_AI_Minion minion in minionList)
-            {
-                {
-
-
-                    if (minion.Health <= Program._Player.GetAutoAttackDamage(minion, true))
-                    {
-                       
-                        if (minion != null && (VnHarryWalker.CanAttack || VnHarryWalker.HaveCancled) && VnHarryWalker.IsAllowedToAttack())
-                        {                       
-                                if (Variables.HarassMode)
-                                {
-                                    Player.IssueOrder(GameObjectOrder.AttackUnit, minion);
-                                    VnHarryWalker._lastAaTick = Environment.TickCount + Game.Ping / 2;
-                                }
-                            
-                        }
-                                             
-                    }
-
-                }
-            }
             var allMinionsQ = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Program._Player.ServerPosition.To2D(), _Q.Range + _Q.Width + 30);
             if (allMinionsQ == null) return;
 
@@ -187,13 +162,11 @@ namespace VnHarry_AIO.Marksman
             }
             else
             {
-
             }
         }
-       
+
         private void Harass()
         {
-            //Chat.Print("Harass");
             var target = TargetSelector2.GetTarget(_Q.Range + 100, DamageType.Magical);
             if (target == null) return;
             _Q.Cast(target);
@@ -201,34 +174,35 @@ namespace VnHarry_AIO.Marksman
 
         private void Combo()
         {
-            //Chat.Print("Combo");
-            var useQ = Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue;
-            var useW = Variables.Config["commbo.w"].Cast<CheckBox>().CurrentValue;
-            var useE = Variables.Config["commbo.e"].Cast<CheckBox>().CurrentValue;
-            var useR = Variables.Config["commbo.r"].Cast<CheckBox>().CurrentValue;
-
-            var qTarget = TargetSelector2.GetTarget(_Q.Range + 100, DamageType.Physical);
-            var wTarget = TargetSelector2.GetTarget(_W.Range + 100, DamageType.Magical);
-            var rTarget = TargetSelector2.GetTarget(_R.Range + 100, DamageType.Physical);
-
-            var comboDamage = rTarget != null ? GetComboDamage(rTarget) : 0;
-
-            if (_Q.IsReady() && useQ)
+            try
             {
-                _Q.Cast(qTarget);
+                var useQ = Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue;
+                var useW = Variables.Config["commbo.w"].Cast<CheckBox>().CurrentValue;
+                var useE = Variables.Config["commbo.e"].Cast<CheckBox>().CurrentValue;
+                var useR = Variables.Config["commbo.r"].Cast<CheckBox>().CurrentValue;
+                foreach (var target in HeroManager.Enemies.Where(o => o.IsValidTarget(1200) && !o.IsDead && !o.IsZombie))
+                {
+                    var comboDamage = target != null ? GetComboDamage(target) : 0;
+                    if (useQ && _Q.IsReady() && _Q.GetPrediction(target).HitChance >= HitChance.Medium)
+                    {
+                        _Q.Cast(target);
+                    }
+                    if (useW && _W.IsReady() && _W.GetPrediction(target).HitChance >= HitChance.Medium && target.IsValidTarget(_W.Range))
+                    {
+                        _W.Cast(target);
+                    }
+                    if (useE && _E.IsReady() && target.IsValidTarget(700))
+                    {
+                        _E.Cast(Game.CursorPos);
+                    }
+                    if (useR && _R.IsReady() && _R.GetPrediction(target).HitChance >= HitChance.High && target.Health <= RDamage(target) && target.IsValidTarget(_R.Range))
+                    {
+                        _R.Cast(target);
+                    }
+                }
             }
-            if (_W.IsReady() && useQ)
+            catch (Exception)
             {
-                _W.Cast(wTarget);
-            }
-            if (_E.IsReady() && useE)
-            {
-                _E.Cast(Game.CursorPos);
-            }
-            if (_R.IsReady() && useR && (comboDamage > rTarget.Health))
-            //if (_R.IsReady() && useR && rTarget.IsValidTarget())
-            {
-                _R.Cast(rTarget);
             }
         }
 
@@ -244,47 +218,12 @@ namespace VnHarry_AIO.Marksman
                 if (Variables.Config["draw.w"].Cast<CheckBox>().CurrentValue && _W.IsReady())
                 {
                     new Circle { Color = System.Drawing.Color.White, BorderWidth = 1, Radius = _W.Range }.Draw(Player.Instance.Position);
-
                 }
                 if (Variables.Config["draw.r"].Cast<CheckBox>().CurrentValue && _R.IsReady())
                 {
                     new Circle { Color = System.Drawing.Color.White, BorderWidth = 1, Radius = _R.Range }.Draw(Player.Instance.Position);
                 }
             }
-
-            if (true)
-            {
-                var minionList = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Program._Player.ServerPosition.To2D(), Program._Player.AttackRange + 500);
-                foreach (Obj_AI_Minion minion in minionList)
-                {
-                    {
-
-                        //var attackToKill = Math.Ceiling(minion.MaxHealth / Program._Player.GetAutoAttackDamage(minion, true));
-                        //var hpBarPosition = minion.HPBarPosition;
-                        //var barWidth = minion.IsMelee ? 75 : 80;
-                        //if (minion.HasBuff("turretshield"))
-                        //    barWidth = 70;
-                        //var barDistance = (float)(barWidth / attackToKill);
-
-                        //for (var i = 1; i < attackToKill; i++)
-                        //{
-                        //    var startposition = hpBarPosition.X + 45 + barDistance * i;
-                        //    Drawing.DrawLine(
-                        //        new Vector2(startposition, hpBarPosition.Y + 18),
-                        //        new Vector2(startposition, hpBarPosition.Y + 23),
-                        //        1,
-                        //        System.Drawing.Color.Black);
-                        //}
-
-                        if (minion.Health <= Program._Player.GetAutoAttackDamage(minion, true))
-                            new Circle { Color = System.Drawing.Color.Lime, BorderWidth = 1, Radius = minion.BoundingRadius }.Draw(minion.Position);
-                        else if (minion.Health <= Program._Player.GetAutoAttackDamage(minion, true) * 2)
-                            new Circle { Color = System.Drawing.Color.Gold, BorderWidth = 1, Radius = minion.BoundingRadius }.Draw(minion.Position);
-                    }
-                }
-            }
-
         }
     }
-
 }

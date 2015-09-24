@@ -1,10 +1,7 @@
 ﻿using EloBuddy;
 using EloBuddy.SDK;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VnHarry_AIO.Internal;
 
 namespace VnHarry_AIO.Utilities
@@ -13,8 +10,8 @@ namespace VnHarry_AIO.Utilities
     {
         public VnHarryWalker()
         {
-
         }
+
         public static float GetAutoAttackRange(Obj_AI_Base source = null, AttackableUnit target = null)
         {
             if (source == null)
@@ -46,10 +43,12 @@ namespace VnHarry_AIO.Utilities
                 return Program._Player.CombatType == GameObjectCombatType.Melee ? float.MaxValue : Program._Player.BasicAttack.MissileSpeed;
             }
         }
+
         public static int _lastAaTick;
         public static bool _attack = true;
         public static bool _movement = true;
         public static int _lastRealAttack;
+
         public static bool CanAttack
         {
             get
@@ -58,6 +57,7 @@ namespace VnHarry_AIO.Utilities
                        (Environment.TickCount + Game.Ping / 2 + 25 >= _lastAaTick + Program._Player.AttackDelay * 1000 && _attack);
             }
         }
+
         public static bool HaveCancled
         {
             get
@@ -65,11 +65,12 @@ namespace VnHarry_AIO.Utilities
                 return _lastAaTick - Environment.TickCount > Program._Player.AttackCastDelay * 1000 + 25 && _lastRealAttack < _lastAaTick;
             }
         }
+
         public static bool IsAllowedToAttack()
         {
             if (!_attack)
                 return false;
-        
+
             if (Variables.ComboMode)
                 return false;
             if (Variables.HarassMode)
@@ -77,8 +78,8 @@ namespace VnHarry_AIO.Utilities
             if (Variables.LaneClearMode)
                 return false;
             return !Variables.LastHitMode;
-
         }
+
         public static void SetAttack(bool value)
         {
             _attack = value;
@@ -88,6 +89,7 @@ namespace VnHarry_AIO.Utilities
         {
             _movement = value;
         }
+
         public static double CountKillhits(Obj_AI_Base enemy)
         {
             return enemy.Health / Program._Player.GetAutoAttackDamage(enemy);
@@ -153,6 +155,7 @@ namespace VnHarry_AIO.Utilities
 
             return tempTarget;
         }
+
         public static AttackableUnit GetTarget()
         {
             AttackableUnit tempTarget = null;
@@ -195,14 +198,13 @@ namespace VnHarry_AIO.Utilities
                 if (tempTarget != null)
                     return tempTarget;
             }
-               
 
             return tempTarget;
         }
 
         private static AttackableUnit GetBaseStructures()
         {
-            //turrets 
+            //turrets
             foreach (
                     var turret in
                         ObjectManager.Get<Obj_AI_Turret>().Where(turret => turret.IsValidTarget(GetAutoAttackRange(Program._Player, turret))))
@@ -218,6 +220,5 @@ namespace VnHarry_AIO.Utilities
             //nexus
             return ObjectManager.Get<Obj_HQ>().FirstOrDefault(t => t.IsValidTarget(GetAutoAttackRange(Program._Player, t)));
         }
-        
     }
 }

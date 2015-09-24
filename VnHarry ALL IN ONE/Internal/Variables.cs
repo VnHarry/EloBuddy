@@ -8,6 +8,7 @@ namespace VnHarry_AIO.Internal
         public static Menu InfoMenu;
         public static Menu Config;
         public static Menu Activator;
+        public static Menu UniversalGankAlerter;
         public static bool ComboMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Combo;
         public static bool HarassMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Harass;
         public static bool LaneClearMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.LaneClear;
