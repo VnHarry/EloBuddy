@@ -47,6 +47,12 @@ namespace VnHarry_AIO
             Variables.InfoMenu.AddGroupLabel("VnHarry AIO");
             Variables.InfoMenu.AddLabel("Version: " + "1.0.0.0");
             Variables.InfoMenu.AddSeparator();
+            Variables.InfoMenu.AddLabel("Supported Champions: ");
+            Variables.InfoMenu.AddLabel("Corki ");
+            Variables.InfoMenu.AddLabel("Graves ");
+            Variables.InfoMenu.AddLabel("Sivir ");
+            Variables.InfoMenu.AddLabel("Vayne ");
+            Variables.InfoMenu.AddSeparator();
             Variables.InfoMenu.AddLabel("Creators: " + "VnHarry");
 
             Variables.Activator = Variables.InfoMenu.AddSubMenu("MB Activator", "MBActivator");
@@ -69,8 +75,7 @@ namespace VnHarry_AIO
             Chat.Print("VnHarry AIO - <font color=\"#FFFFFF\">Loaded</font>", Color.FromArgb(255, 210, 68, 74));
             var championName = ObjectManager.Player.ChampionName.ToLower(CultureInfo.InvariantCulture);
             Variables.Config = Variables.InfoMenu.AddSubMenu(Player.Instance.ChampionName, Player.Instance.ChampionName);
-            Chat.Print("VnHarry AIO - <font color=\"#FFFFFF\">{0} Loaded</font>",
-                Color.FromArgb(255, 210, 68, 74), ObjectManager.Player.ChampionName);
+            Chat.Print("VnHarry AIO - <font color=\"#FFFFFF\">{0} Loaded</font>",Color.FromArgb(255, 210, 68, 74), ObjectManager.Player.ChampionName);
             switch (championName)
             {
                 case "ashe":

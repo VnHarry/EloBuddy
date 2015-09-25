@@ -96,7 +96,6 @@ namespace VnHarry_AIO.Marksman
                 HeroManager.Enemies
                     .Where(x => x.Position.Distance(ObjectManager.Player) < _R.Range))
             {
-                Console.WriteLine(hero.ChampionName);
                 if (!hero.IsDead && !hero.IsZombie && _RCanKill(hero) &&
                     Variables.Config["misc.autor"].Cast<CheckBox>().CurrentValue)
                 {
@@ -121,7 +120,7 @@ namespace VnHarry_AIO.Marksman
 
         private void Clear()
         {
-            //
+            //code here
         }
 
         private void Harass()
