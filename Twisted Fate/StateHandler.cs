@@ -45,8 +45,8 @@ namespace VnHarry_Twisted_Fate
             var allMinionsQ = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Player.Instance.ServerPosition.To2D(), Program.Q.Range + Program.Q.Width + 30);
             if (allMinionsQ == null) return;
 
-            var useQ = Program.LaneClearMenu["drawings.q"].Cast<CheckBox>().CurrentValue;
-            var useW = Program.LaneClearMenu["drawings.w"].Cast<CheckBox>().CurrentValue;
+            var useQ = Program.LaneClearMenu["laneclear.q"].Cast<CheckBox>().CurrentValue;
+            var useW = Program.LaneClearMenu["laneclear.w"].Cast<CheckBox>().CurrentValue;
 
             if (Program._Player.ManaPercent >= Program.LaneClearMenu["laneclear.mana"].Cast<Slider>().CurrentValue)
             {
