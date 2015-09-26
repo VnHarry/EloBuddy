@@ -47,12 +47,22 @@ namespace VnHarry_AIO.Marksman
 
         private void GameObject_OnCreate(GameObject sender, EventArgs args)
         {
+            if (!sender.Name.Contains("Draven_Base_Q_reticle_self.troy"))
+            {
+                return;
+            }
+
             QReticles.Add(new QRecticle(sender, Environment.TickCount + 1800));
             Core.DelayAction(() => QReticles.RemoveAll(x => x.Object.NetworkId == sender.NetworkId), 1800);
         }
 
         private void GameObject_OnDelete(GameObject sender, EventArgs args)
         {
+            if (!sender.Name.Contains("Draven_Base_Q_reticle_self.troy"))
+            {
+                return;
+            }
+
             QReticles.RemoveAll(x => x.Object.NetworkId == sender.NetworkId);
         }
 
@@ -122,7 +132,7 @@ namespace VnHarry_AIO.Marksman
 
         public override sealed void _SetupSpells()
         {
-            _Q = new Spell.Active(SpellSlot.Q, (uint)Program._Player.GetAutoAttackRange());
+            _Q = new Spell.Active(SpellSlot.Q);
             _W = new Spell.Active(SpellSlot.W);
             _E = new Spell.Skillshot(SpellSlot.E, 1050, SkillShotType.Linear, 250, 1400, 130);
             _R = new Spell.Skillshot(SpellSlot.R, 20000, SkillShotType.Linear, 400, 2000, 160);
@@ -165,7 +175,7 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.AddGroupLabel("Draw");
             Variables.Config.Add("draw.e", new CheckBox("Draw E"));
             Variables.Config.Add("draw.DrawAxeLocation", new CheckBox("Draw Axe Location"));
-            Variables.Config.Add("draw.DrawAxeRange", new CheckBox("Draw Axe Catch Range"));
+            Variables.Config.Add("draw.DrawAxeRange", new CheckBox("Draw Axe Catch Range", false));
         }
 
         public static float RDamage(Obj_AI_Base target)
@@ -193,7 +203,6 @@ namespace VnHarry_AIO.Marksman
                 var UseWForQ = Variables.Config["axeSetting.UseWForQ"].Cast<CheckBox>().CurrentValue;
                 var DontCatchUnderTurret = Variables.Config["axeSetting.DontCatchUnderTurret"].Cast<CheckBox>().CurrentValue;
                 
-
                 var bestReticle =
                     QReticles.Where(
                         x =>
@@ -413,7 +422,7 @@ namespace VnHarry_AIO.Marksman
                     foreach (var axe in
                         QReticles.Where(x => x.Object.NetworkId != (bestAxe == null ? 0 : bestAxe.Object.NetworkId)))
                     {
-                        new Circle { Color = System.Drawing.Color.Yellow, BorderWidth = 1, Radius = 120 }.Draw(bestAxe.Position);
+                        new Circle { Color = System.Drawing.Color.Yellow, BorderWidth = 1, Radius = 120 }.Draw(axe.Position);
                     }
                 }
                 if (drawAxeRange)
