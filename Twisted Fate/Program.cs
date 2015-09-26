@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EloBuddy;
+﻿using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
+using System;
+using System.Linq;
 
 namespace VnHarry_Twisted_Fate
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Loading.OnLoadingComplete += Loading_OnLoadingComplete;
         }
@@ -30,7 +27,6 @@ namespace VnHarry_Twisted_Fate
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
-
             //if (ObjectManager.Player.BaseSkinName != "TwistedFate") return;
 
             TargetSelector2.init();
@@ -57,16 +53,27 @@ namespace VnHarry_Twisted_Fate
             WMenu.Add("wmenu.red", new KeyBind("Select Red", false, KeyBind.BindTypes.HoldActive, 'T'));
 
             LaneClearMenu = TwistedFateMenu.AddSubMenu("LaneClear Settings", "laneclearsettings");
+            LaneClearMenu.Add("laneclear.q", new CheckBox("Auto-Q", false));
+            LaneClearMenu.Add("laneclear.w", new CheckBox("Auto-W", false));
             LaneClearMenu.Add("laneclear.mana", new Slider("Mana manager (%)", 50, 0, 100));
-            
+
             //DrawingsMenu
             DrawingsMenu = TwistedFateMenu.AddSubMenu("Drawings Settings", "drawingsmenu");
             DrawingsMenu.AddGroupLabel("Drawings Settings");
             DrawingsMenu.Add("drawings.q", new CheckBox("Draw Q"));
             DrawingsMenu.Add("drawings.r", new CheckBox("Draw R"));
-          
+
             Game.OnTick += Game_OnTick;
             Drawing.OnDraw += Drawing_OnDraw;
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+        }
+
+        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (sender.IsMe && args.SData.Name == "gate")
+            {
+                CardSelector.StartSelecting(Cards.Yellow);
+            }
         }
 
         private static void Drawing_OnDraw(EventArgs args)
@@ -95,8 +102,14 @@ namespace VnHarry_Twisted_Fate
                         }
                     }
                 }
+                if (true)
+                {
+                    var target = Orbwalker.GetTarget();
+
+                    if (target != null)
+                        new Circle { Color = System.Drawing.Color.Red, BorderWidth = 1, Radius = target.BoundingRadius + 15 }.Draw(target.Position);
+                }
             }
-           
         }
 
         private static void Game_OnTick(EventArgs args)
@@ -125,18 +138,33 @@ namespace VnHarry_Twisted_Fate
             var autoQI = Program.QMenu["qmenu.autoqi"].Cast<CheckBox>().CurrentValue;
             var autoQD = Program.QMenu["qmenu.autoqi"].Cast<CheckBox>().CurrentValue;
 
-            if (ObjectManager.Player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
+            if (Q.IsReady())
             {
-                foreach (var enemy in HeroManager.Enemies.Where(o => o.IsValidTarget(Q.Range) && !o.IsDead && !o.IsZombie))
+                var heroes = HeroManager.Enemies.Where(t => t.IsFeared || t.IsCharmed || t.IsTaunted || t.IsRecalling);
+                if (heroes != null)
                 {
-                    var pred = Q.GetPrediction(enemy);
-                    if ((pred.HitChance == HitChance.Immobile && autoQI) ||
-                        (pred.HitChance == HitChance.Dashing && autoQD))
+                    foreach (var enemy in heroes)
                     {
+                        var pred = Q.GetPrediction(enemy);
                         Q.Cast(pred.CastPosition);
                     }
                 }
             }
+
+            if (Q.IsReady() && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.None))
+            {
+                var enemy = TargetSelector.GetTarget(Q.Range, DamageType.Mixed);
+
+                if (enemy != null)
+                {
+                    if (enemy.Health < _Player.GetSpellDamage(enemy, SpellSlot.Q))
+                    {
+                        var pred = Q.GetPrediction(enemy);
+                        Q.Cast(pred.CastPosition);
+                    }
+                }
+            }
+
             if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
             {
                 StateHandler.Combo();
@@ -152,7 +180,7 @@ namespace VnHarry_Twisted_Fate
             else if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LastHit))
             {
                 StateHandler.LastHit();
-            } 
+            }
         }
     }
 }

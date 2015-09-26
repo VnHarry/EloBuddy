@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EloBuddy;
+﻿using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Menu.Values;
+using System.Linq;
 
 namespace VnHarry_Twisted_Fate
 {
-    class StateHandler
+    internal class StateHandler
     {
         public static AIHeroClient _Player { get { return ObjectManager.Player; } }
+
         public static float GetDynamicRange()
         {
             if (Program.Q.IsReady())
@@ -20,6 +17,7 @@ namespace VnHarry_Twisted_Fate
             }
             return _Player.GetAutoAttackRange();
         }
+
         public static void Combo()
         {
             var target = TargetSelector2.GetTarget(GetDynamicRange() + 100, DamageType.Magical);
@@ -32,7 +30,7 @@ namespace VnHarry_Twisted_Fate
             var target = TargetSelector2.GetTarget(GetDynamicRange() + 100, DamageType.Magical);
             if (target == null) return;
             CardSelector.StartSelecting(Cards.Blue);
-            Program.Q.Cast(target);          
+            Program.Q.Cast(target);
         }
 
         public static void LastHit()
@@ -47,29 +45,37 @@ namespace VnHarry_Twisted_Fate
             var allMinionsQ = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Player.Instance.ServerPosition.To2D(), Program.Q.Range + Program.Q.Width + 30);
             if (allMinionsQ == null) return;
 
-            if (Program._Player.ManaPercent >= Program.LaneClearMenu["laneclear.mana"].Cast<Slider>().CurrentValue)
+            var useQ = Program.LaneClearMenu["drawings.q"].Cast<CheckBox>().CurrentValue;
+            var useW = Program.LaneClearMenu["drawings.w"].Cast<CheckBox>().CurrentValue;
+
+            if (useW)
             {
-                CardSelector.StartSelecting(Cards.Red);
-                foreach (Obj_AI_Minion minion in allMinionsQ)
+                if (Program._Player.ManaPercent >= Program.LaneClearMenu["laneclear.mana"].Cast<Slider>().CurrentValue)
                 {
-                    if ((!Player.Instance.IsInAutoAttackRange(minion) || (!Orbwalker.CanAutoAttack && Orbwalker.LastTarget.NetworkId != minion.NetworkId)) && (minion.Health < 0.8 * QDamage(minion)))
+                    CardSelector.StartSelecting(Cards.Red);
+                    foreach (Obj_AI_Minion minion in allMinionsQ)
                     {
-                        Program.Q.Cast(minion);
-                        break;
+                        if ((!Player.Instance.IsInAutoAttackRange(minion) || (!Orbwalker.CanAutoAttack && Orbwalker.LastTarget.NetworkId != minion.NetworkId)) && (minion.Health < 0.8 * QDamage(minion)))
+                        {
+                            if (useQ)
+                            {
+                                Program.Q.Cast(minion);
+                            }
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                CardSelector.StartSelecting(Cards.Blue);
+                else
+                {
+                    CardSelector.StartSelecting(Cards.Blue);
+                }
             }
         }
-
 
         public static float QDamage(Obj_AI_Base target)
         {
             return _Player.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float) (new[] {60, 110, 160, 210, 260}[Program.Q.Level - 1] + 0.65*_Player.FlatMagicDamageMod));
+                (float)(new[] { 60, 110, 160, 210, 260 }[Program.Q.Level - 1] + 0.65 * _Player.FlatMagicDamageMod));
         }
     }
 }
