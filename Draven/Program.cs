@@ -17,7 +17,6 @@ namespace VnHarry_AIO
     internal class Program
     {
         public static PluginBase ChampionPlugin;
-        private static Core _instance;
 
         public static AIHeroClient _Player
         {

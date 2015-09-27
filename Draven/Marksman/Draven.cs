@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VnHarry_AIO.Internal;
+using VnHarry_AIO.Utilities;
 
 namespace VnHarry_AIO.Marksman
 {
@@ -18,7 +19,7 @@ namespace VnHarry_AIO.Marksman
         private static Spell.Active _W;
         private static Spell.Skillshot _E;
         private static Spell.Skillshot _R;
-        private int LastAxeMoveTime { get; set; }
+        private float LastAxeMoveTime { get; set; }
         public static List<QRecticle> QReticles { get; set; }
 
         public int QCount
@@ -36,13 +37,33 @@ namespace VnHarry_AIO.Marksman
             _SetupMenu();
             _SetupSpells();
 
+            QReticles = new List<QRecticle>();
+
             GameObject.OnCreate += GameObject_OnCreate;
             GameObject.OnDelete += GameObject_OnDelete;
+            Player.OnIssueOrder += Player_OnIssueOrder;
             Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
             Orbwalker.OnPreAttack += Orbwalker_OnPreAttack;
             Game.OnTick += Game_OnTick;
             Drawing.OnDraw += Drawing_OnDraw;
             Gapcloser.OnGapcloser += Gapcloser_OnGapCloser;
+        }
+
+        private Vector2 _lastIssueOrderPos;
+        private void Player_OnIssueOrder(Obj_AI_Base sender, PlayerIssueOrderEventArgs args)
+        {
+
+            if (args.Order == GameObjectOrder.AttackUnit)
+            {
+                _lastIssueOrderPos = Player.Instance.Distance(args.Target, true) >=
+                                     Player.Instance.GetAutoAttackRange((AttackableUnit)args.Target).Pow()
+                    ? args.Target.Position.To2D()
+                    : Player.Instance.Position.To2D();
+            }
+            else
+            {
+                _lastIssueOrderPos = (args.Target != null ? args.Target.Position : args.TargetPosition).To2D();
+            }           
         }
 
         private void GameObject_OnCreate(GameObject sender, EventArgs args)
@@ -51,8 +72,8 @@ namespace VnHarry_AIO.Marksman
             {
                 return;
             }
-
-            QReticles.Add(new QRecticle(sender, Environment.TickCount + 1800));
+            
+            QReticles.Add(new QRecticle(sender, (float)(Game.Time + 1.8)));
             Core.DelayAction(() => QReticles.RemoveAll(x => x.Object.NetworkId == sender.NetworkId), 1800);
         }
 
@@ -93,7 +114,7 @@ namespace VnHarry_AIO.Marksman
                 var useQ = Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue;
                 var axeSettingAxe = Variables.Config["axeSetting.axe"].Cast<Slider>().CurrentValue;
 
-                if ((useQ) && (QCount < axeSettingAxe) && (target is AIHeroClient))
+                if ((useQ) && (QCount < axeSettingAxe) && (target is AIHeroClient) && _Q.IsReady())
                 {
                     _Q.Cast();
                 }
@@ -110,7 +131,7 @@ namespace VnHarry_AIO.Marksman
                     return;
                 }
 
-                if (useQ && (QCount < laneclearMana) && (target as Obj_AI_Base).IsMinion)
+                if (useQ && (QCount < laneclearMana) && (target as Obj_AI_Base).IsMinion && _Q.IsReady())
                 {
                     _Q.Cast();
                 }
@@ -124,8 +145,10 @@ namespace VnHarry_AIO.Marksman
             {
                 return;
             }
-
-            _E.Cast(sender);
+            if (_E.IsReady())
+            {
+                _E.Cast(sender);
+            }
         }
 
         #region Setup
@@ -136,8 +159,6 @@ namespace VnHarry_AIO.Marksman
             _W = new Spell.Active(SpellSlot.W);
             _E = new Spell.Skillshot(SpellSlot.E, 1050, SkillShotType.Linear, 250, 1400, 130);
             _R = new Spell.Skillshot(SpellSlot.R, 20000, SkillShotType.Linear, 400, 2000, 160);
-
-            QReticles = new List<QRecticle>();
         }
 
         public override sealed void _SetupMenu()
@@ -190,34 +211,33 @@ namespace VnHarry_AIO.Marksman
         }
 
         #endregion Setup
-
-        public override void Game_OnTick(EventArgs args)
+        private void catchAxe()
         {
             var catchOption = Variables.Config["axeSetting.mode"].Cast<Slider>().CurrentValue;
 
             if (((catchOption == 1 && Variables.ComboMode)
                  || (catchOption == 2 && !Variables.NoneMode)
-                 || catchOption == 3) && Environment.TickCount - LastAxeMoveTime >= 50)
+                 || catchOption == 3) && Game.Time - LastAxeMoveTime >= 0.05)
             {
                 var CatchAxeRange = Variables.Config["axeSetting.CatchAxeRange"].Cast<Slider>().CurrentValue;
                 var UseWForQ = Variables.Config["axeSetting.UseWForQ"].Cast<CheckBox>().CurrentValue;
                 var DontCatchUnderTurret = Variables.Config["axeSetting.DontCatchUnderTurret"].Cast<CheckBox>().CurrentValue;
-                
+
                 var bestReticle =
-                    QReticles.Where(
-                        x =>
-                        x.Object.Position.Distance(Game.CursorPos)
-                        < CatchAxeRange)
-                        .OrderBy(x => x.Position.Distance(Program._Player.ServerPosition))
-                        .ThenBy(x => x.Position.Distance(Game.CursorPos))
-                        .FirstOrDefault();
+                   QReticles.Where(
+                        h => h.Object.Position.Distance(Game.CursorPos) <= CatchAxeRange).
+                        OrderBy(h => h.Object.Position.Distance(Program._Player.ServerPosition)).
+                        ThenBy(x => x.Object.Distance(Game.CursorPos)).
+                        FirstOrDefault();
+
+                //Chat.Print("Distance: " + bestReticle.Object.Position.Distance(Program._Player.ServerPosition));
 
                 if (bestReticle != null && bestReticle.Object.Position.Distance(Program._Player.ServerPosition) > 110)
                 {
-                    var eta = 1000 * (Program._Player.Distance(bestReticle.Position) / Program._Player.MoveSpeed);
-                    var expireTime = bestReticle.ExpireTime - Environment.TickCount;
+                    var catchTime = Program._Player.Distance(bestReticle.Object.Position) / Program._Player.MoveSpeed;
+                    var expireTime = bestReticle.ExpireTime - Game.Time;
 
-                    if (eta >= expireTime && UseWForQ)
+                    if (catchTime >= expireTime && UseWForQ && _W.IsReady())
                     {
                         _W.Cast();
                     }
@@ -226,22 +246,33 @@ namespace VnHarry_AIO.Marksman
                     {
                         if (IsUnderTurret(Program._Player.ServerPosition) && IsUnderTurret(bestReticle.Object.Position))
                         {
-                            LastAxeMoveTime = Environment.TickCount;
-
-                            Orbwalker.OrbwalkTo(bestReticle.Object.Position);
+                            LastAxeMoveTime = Game.Time;
+                            //Chat.Print("A");
+                            //Chat.Print("Player Postition: " + Program._Player.Position);
+                            //Chat.Print("bestReticle Position: " + bestReticle.Object.Position);
+                            //Orbwalker.OrbwalkTo(bestReticle.Object.Position);
+                            AutoPathing.DoPath(bestReticle.Object.Position.To2D());
                         }
                         else if (!IsUnderTurret(bestReticle.Object.Position))
                         {
-                            LastAxeMoveTime = Environment.TickCount;
-
-                            Orbwalker.OrbwalkTo(bestReticle.Object.Position);
+                            LastAxeMoveTime = Game.Time;
+                            //Chat.Print("B");
+                            //Chat.Print("Player Postition: " + Program._Player.Position);
+                            //Chat.Print("bestReticle Position: " + bestReticle.Object.Position);
+                            //Orbwalker.OrbwalkTo(bestReticle.Object.Position);
+                            //Orbwalker.
+                            AutoPathing.DoPath(bestReticle.Object.Position.To2D());
+                            //Orbwalker.OrbwalkTo(bestReticle.Object.Position);
                         }
                     }
                     else
                     {
-                        LastAxeMoveTime = Environment.TickCount;
-
-                        Orbwalker.OrbwalkTo(bestReticle.Object.Position);
+                        LastAxeMoveTime = Game.Time;
+                        //Chat.Print("C");
+                        //Chat.Print("Player Postition: " + Program._Player.Position);
+                        //Chat.Print("bestReticle Position: " + bestReticle.Object.Position);
+                        //Orbwalker.OrbwalkTo(bestReticle.Object.Position);
+                        AutoPathing.DoPath(bestReticle.Object.Position.To2D());
                     }
                 }
                 else
@@ -251,11 +282,19 @@ namespace VnHarry_AIO.Marksman
             }
             else
             {
-                //Orbwalker.OrbwalkTo(Game.CursorPos);
-               
-            }
+                if (!Variables.NoneMode)
+                {
+                    Orbwalker.OrbwalkTo(Game.CursorPos);
+                }
 
-            var UseWSlow = Variables.Config["misc.UseWSlow"].Cast<CheckBox>().CurrentValue;
+            }
+        }
+
+        public override void Game_OnTick(EventArgs args)
+        {
+            catchAxe();
+
+             var UseWSlow = Variables.Config["misc.UseWSlow"].Cast<CheckBox>().CurrentValue;
 
             if (_W.IsReady() && UseWSlow && Program._Player.HasBuffOfType(BuffType.Slow))
             {
@@ -348,6 +387,11 @@ namespace VnHarry_AIO.Marksman
         {
             var target = TargetSelector.GetTarget(_E.Range, DamageType.Physical);
 
+            if (target == null)
+            {
+                return;
+            }
+
             if (!target.IsValidTarget())
             {
                 return;
@@ -401,7 +445,7 @@ namespace VnHarry_AIO.Marksman
 
             if (!Program._Player.IsDead)
             {
-                if (drawE && _E.IsReady())
+                if (drawE && _E.IsReady() && _E.Level >= 1)
                 {
                     new Circle { Color = System.Drawing.Color.Red, BorderWidth = 1, Radius = _E.Range }.Draw(Player.Instance.Position);
                 }
@@ -418,11 +462,13 @@ namespace VnHarry_AIO.Marksman
                     {
                         new Circle { Color = System.Drawing.Color.LimeGreen, BorderWidth = 1, Radius = 120 }.Draw(bestAxe.Position);
                     }
-
-                    foreach (var axe in
-                        QReticles.Where(x => x.Object.NetworkId != (bestAxe == null ? 0 : bestAxe.Object.NetworkId)))
+                    else
                     {
-                        new Circle { Color = System.Drawing.Color.Yellow, BorderWidth = 1, Radius = 120 }.Draw(axe.Position);
+                        foreach (var axe in
+                            QReticles.Where(x => x.Object.NetworkId != (bestAxe == null ? 0 : bestAxe.Object.NetworkId)))
+                        {
+                            new Circle { Color = System.Drawing.Color.Yellow, BorderWidth = 1, Radius = 120 }.Draw(axe.Position);
+                        }
                     }
                 }
                 if (drawAxeRange)
@@ -445,7 +491,7 @@ namespace VnHarry_AIO.Marksman
         /// </summary>
         /// <param name="rectice">The rectice.</param>
         /// <param name="expireTime">The expire time.</param>
-        public QRecticle(GameObject rectice, int expireTime)
+        public QRecticle(GameObject rectice, float expireTime)
         {
             this.Object = rectice;
             this.ExpireTime = expireTime;
@@ -461,7 +507,7 @@ namespace VnHarry_AIO.Marksman
         /// <value>
         ///     The expire time.
         /// </value>
-        public int ExpireTime { get; set; }
+        public float ExpireTime { get; set; }
 
         /// <summary>
         ///     Gets or sets the object.
