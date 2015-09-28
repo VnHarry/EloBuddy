@@ -6,6 +6,8 @@ using EloBuddy.SDK.Menu.Values;
 using System;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using VnHarry_AIO.Internal;
 using VnHarry_AIO.Marksman;
 using VnHarry_AIO.Utilities;
@@ -35,7 +37,14 @@ namespace VnHarry_AIO
                 Console.WriteLine(e);
             }
         }
-
+        public static string GetProductVersion()
+        {
+            var attribute = (AssemblyVersionAttribute)Assembly
+              .GetExecutingAssembly()
+              .GetCustomAttributes(typeof(AssemblyVersionAttribute), true)
+              .Single();
+            return attribute.Version;
+        }
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
             TargetSelector2.init();
@@ -45,14 +54,18 @@ namespace VnHarry_AIO
 
             Variables.InfoMenu = MainMenu.AddMenu("VnHarry AIO", "MarksmanBuddy");
             Variables.InfoMenu.AddGroupLabel("VnHarry Tất cả trong một");
-            Variables.InfoMenu.AddLabel("Version: " + "1.0.0.0");
+            Variables.InfoMenu.AddLabel("Version: " + GetProductVersion());
             Variables.InfoMenu.AddSeparator();
             Variables.InfoMenu.AddLabel("Danh sách tướng hỗ trợ: ");
             Variables.InfoMenu.AddLabel("Corki ");
+            Variables.InfoMenu.AddLabel("Draven ");
             Variables.InfoMenu.AddLabel("Graves ");
             Variables.InfoMenu.AddLabel("Sivir ");
+            Variables.InfoMenu.AddLabel("Varus in develop");
             Variables.InfoMenu.AddLabel("Vayne ");
             Variables.InfoMenu.AddSeparator();
+            Variables.InfoMenu.AddLabel("Có lỗi hay muốn phát triển liên hệ trực tiếp trên diễn đàn Harry!");
+            Variables.InfoMenu.AddLabel("Trân trọng");
             Variables.InfoMenu.AddLabel("Được tạo bởi: " + "VnHarry");
 
             Variables.Activator = Variables.InfoMenu.AddSubMenu("MB Activator", "MBActivator");
@@ -91,7 +104,7 @@ namespace VnHarry_AIO
                     break;
 
                 case "draven":
-                    ChampionPlugin = new Champion();
+                    ChampionPlugin = new Draven();
                     break;
 
                 case "ezreal":
@@ -172,6 +185,7 @@ namespace VnHarry_AIO
             Variables.HarassMode = Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Harass);
             Variables.LaneClearMode = Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear);
             Variables.LastHitMode = Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LastHit);
+            Variables.NoneMode = Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.None);
         }
     }
 }

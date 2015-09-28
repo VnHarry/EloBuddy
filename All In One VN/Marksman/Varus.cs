@@ -51,7 +51,7 @@ namespace VnHarry_AIO.Marksman
             _Q = new Spell.Skillshot(SpellSlot.Q, 925, SkillShotType.Linear, 250, 1900, 70);
             _W = new Spell.Skillshot(SpellSlot.W, 975, SkillShotType.Linear, 200, 1500, 120);
             _R = new Spell.Skillshot(SpellSlot.R, 1050, SkillShotType.Linear,250, 1950, 120);
-            _Q.Set("VarusQ", "VarusQ", 925, 1600, 1.5f);
+            //_Q.Set("VarusQ", "VarusQ", 925, 1600, 1.5f);
         }
 
         public override sealed void _SetupMenu()

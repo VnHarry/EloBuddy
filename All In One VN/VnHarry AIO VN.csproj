@@ -78,8 +78,10 @@
     <Compile Include="Internal\PluginBase.cs" />
     <Compile Include="Internal\Variables.cs" />
     <Compile Include="Marksman\Corki.cs" />
+    <Compile Include="Marksman\Draven.cs" />
     <Compile Include="Marksman\Graves.cs" />
     <Compile Include="Marksman\Sivir.cs" />
+    <Compile Include="Marksman\Varus.cs" />
     <Compile Include="Marksman\Vayne.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -91,9 +93,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

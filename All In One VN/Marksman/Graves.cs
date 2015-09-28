@@ -77,19 +77,19 @@ namespace VnHarry_AIO.Marksman
         public static float QDamage(Obj_AI_Base target)
         {
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Physical,
-                (float)(new[] { 60, 90, 120, 150, 180 }[_Q.Level] + 0.75 * Program._Player.FlatPhysicalDamageMod));
+                (float)(new[] { 60, 90, 120, 150, 180 }[_Q.Level - 1] + 0.75 * Program._Player.FlatPhysicalDamageMod));
         }
 
         public static float WDamage(Obj_AI_Base target)
         {
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float)(new[] { 60, 110, 160, 210, 260 }[_W.Level] + 0.60 * Program._Player.FlatMagicDamageMod));
+                (float)(new[] { 60, 110, 160, 210, 260 }[_W.Level - 1] + 0.60 * Program._Player.FlatMagicDamageMod));
         }
 
         public static float RDamage(Obj_AI_Base target)
         {
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Physical,
-                (float)(new[] { 200, 400, 550 }[_R.Level] + 1.5 * Program._Player.FlatPhysicalDamageMod));
+                (float)(new[] { 200, 400, 550 }[_R.Level - 1] + 1.5 * Program._Player.FlatPhysicalDamageMod));
         }
 
         #endregion Setup

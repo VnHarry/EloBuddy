@@ -13,5 +13,6 @@ namespace VnHarry_AIO.Internal
         public static bool HarassMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Harass;
         public static bool LaneClearMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.LaneClear;
         public static bool LastHitMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.LastHit;
+        public static bool NoneMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.None;
     }
 }

@@ -7,6 +7,7 @@ using EloBuddy.SDK.Rendering;
 using System;
 using System.Linq;
 using VnHarry_AIO.Internal;
+using VnHarry_AIO.Utilities;
 
 namespace VnHarry_AIO.Marksman
 {
@@ -125,8 +126,8 @@ namespace VnHarry_AIO.Marksman
 
         private void Harass()
         {
-            var QTarget = TargetSelector.GetTarget(_Q.Range, DamageType.Magical);
-            var RTarget = TargetSelector.GetTarget(_R.Range, DamageType.Magical);
+            var QTarget = TargetSelector2.GetTarget(_Q.Range, DamageType.Magical);
+            var RTarget = TargetSelector2.GetTarget(_R.Range, DamageType.Magical);
             if (QTarget.IsValidTarget() && Variables.Config["harass.q"].Cast<CheckBox>().CurrentValue)
             {
                 _Q.Cast(QTarget);
@@ -143,8 +144,8 @@ namespace VnHarry_AIO.Marksman
         {
             try
             {
-                var QTarget = TargetSelector.GetTarget(_Q.Range, DamageType.Magical);
-                var RTarget = TargetSelector.GetTarget(_R.Range, DamageType.Magical);
+                var QTarget = TargetSelector2.GetTarget(_Q.Range, DamageType.Magical);
+                var RTarget = TargetSelector2.GetTarget(_R.Range, DamageType.Magical);
                 if (QTarget.IsValidTarget() && Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue)
                 {
                     _Q.Cast(QTarget);

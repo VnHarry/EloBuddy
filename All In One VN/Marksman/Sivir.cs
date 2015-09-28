@@ -8,6 +8,7 @@ using EloBuddy.SDK.Rendering;
 using System;
 using System.Linq;
 using VnHarry_AIO.Internal;
+using VnHarry_AIO.Utilities;
 
 namespace VnHarry_AIO.Marksman
 {
@@ -126,7 +127,7 @@ namespace VnHarry_AIO.Marksman
 
         private void Harass()
         {
-            var target = TargetSelector.GetTarget(_Q.Range, DamageType.Physical);
+            var target = TargetSelector2.GetTarget(_Q.Range, DamageType.Physical);
             if (target == null) return;
             if (Variables.Config["harass.q"].Cast<CheckBox>().CurrentValue && _Q.IsReady() &&
                 Variables.Config["harass.mana"].Cast<Slider>().CurrentValue <= Program._Player.ManaPercent)

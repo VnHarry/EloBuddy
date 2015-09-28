@@ -4,9 +4,11 @@ using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
+using SharpDX;
 using System;
 using System.Linq;
 using VnHarry_AIO.Internal;
+using VnHarry_AIO.Utilities;
 
 namespace VnHarry_AIO.Marksman
 {
@@ -31,7 +33,7 @@ namespace VnHarry_AIO.Marksman
         public override sealed void _SetupSpells()
         {
             _Q = new Spell.Skillshot(SpellSlot.Q, 325, SkillShotType.Linear);
-            _E = new Spell.Targeted(SpellSlot.E, (uint)Program._Player.Spellbook.GetSpell(SpellSlot.E).SData.CastRange);
+            _E = new Spell.Targeted(SpellSlot.E, 590);
             _R = new Spell.Active(SpellSlot.R);
         }
 
@@ -41,7 +43,10 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.Add("commbo.q", new CheckBox("Sử dụng Q trong Combo"));
             Variables.Config.Add("commbo.e", new CheckBox("Sử dụng E trong Combo"));
             Variables.Config.Add("commbo.r", new CheckBox("Sử dụng R trong Combo"));
-            Variables.Config.Add("commbo.rsminenemiesforr", new Slider("Tướng địch nhỏ nhất thì R: ", 2, 1, 5));
+            Variables.Config.Add("commbo.rsminenemiesforr", new Slider("Tướng địch ít nhất thì R: ", 2, 1, 5));
+            Variables.Config.AddGroupLabel("Harass");
+            Variables.Config.Add("harass.q", new CheckBox("Sử dụng Q trong Harass", false));
+            Variables.Config.Add("harass.mana", new Slider("Quản lý năng lượng (%)", 50, 0, 100));
             Variables.Config.AddGroupLabel("Draw");
             Variables.Config.Add("draw.q", new CheckBox("Vẽ Q"));
             Variables.Config.Add("draw.e", new CheckBox("Vẽ E"));
@@ -57,10 +62,15 @@ namespace VnHarry_AIO.Marksman
                 return;
             }
 
-            if (sender.Distance(ObjectManager.Player) < (_E.Range + 300)
-                && (e.End.Distance(ObjectManager.Player) < sender.Distance(ObjectManager.Player)))
+            if (e.Sender.IsValidTarget(1000))
             {
-                _E.Cast((ObjectManager.Player.Position.Extend(e.End, -1 * _Q.Range)).To3D());
+                new Circle() { Color = System.Drawing.Color.Gold, Radius = e.Sender.BoundingRadius, BorderWidth = 5 }.Draw(e.Sender.Position);
+                var targetpos = Drawing.WorldToScreen(e.Sender.Position);
+                Drawing.DrawText(targetpos[0] - 40, targetpos[1] + 20, System.Drawing.Color.Gold, "Gapcloser");
+            }
+            if (_E.IsInRange(e.Sender) && _E.IsReady())
+            {
+                _E.Cast(e.Sender);
             }
         }
 
@@ -68,10 +78,8 @@ namespace VnHarry_AIO.Marksman
         {
             if (target != null && (!target.IsValid || target.IsDead))
                 return;
-
-            var orbwalkermode = Orbwalker.ActiveModesFlags;
-
-            if (orbwalkermode == Orbwalker.ActiveModes.Combo)
+                  
+            if (Variables.ComboMode)
             {
                 if (Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue && _Q.IsReady())
                 {
@@ -85,9 +93,7 @@ namespace VnHarry_AIO.Marksman
             if (target != null && (!target.IsValid || target.IsDead))
                 return;
 
-            var orbwalkermode = Orbwalker.ActiveModesFlags;
-
-            if (orbwalkermode == Orbwalker.ActiveModes.Combo)
+            if (Variables.ComboMode)
             {
                 if (Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue && _Q.IsReady())
                 {
@@ -120,7 +126,8 @@ namespace VnHarry_AIO.Marksman
             }
             return false;
         }
-
+       
+      
         public override void Game_OnTick(EventArgs args)
         {
             Orbwalker.ForcedTarget = null;
@@ -147,18 +154,43 @@ namespace VnHarry_AIO.Marksman
 
         private void Clear()
         {
-            //
+            if (ObjectManager.Player.ManaPercent > Variables.Config["harass.mana"].Cast<Slider>().CurrentValue)
+            {
+                if (_Q.IsReady() && Variables.Config["harass.q"].Cast<CheckBox>().CurrentValue)
+                {
+                    foreach (var qTarget in HeroManager.Enemies.Where(x => x.IsValidTarget(_Q.Range)))
+                    {
+                        if (qTarget.Buffs.Any(buff => buff.Name == "vaynesilvereddebuff" && buff.Count == 2))
+                        {
+                            _Q.Cast(qTarget);
+                        }
+                    }
+                }
+            }
         }
 
         private void Harass()
         {
+            if (ObjectManager.Player.ManaPercent > Variables.Config["harass.mana"].Cast<Slider>().CurrentValue)
+            {
+                if (_Q.IsReady() && Variables.Config["harass.q"].Cast<CheckBox>().CurrentValue)
+                {
+                    foreach (var qTarget in HeroManager.Enemies.Where(x => x.IsValidTarget(_Q.Range)))
+                    {
+                        if (qTarget.Buffs.Any(buff => buff.Name == "vaynesilvereddebuff" && buff.Count == 2))
+                        {
+                            _Q.Cast(qTarget);
+                        }
+                    }
+                }
+            }
         }
 
         private void Combo()
         {
             try
             {
-                var _target = TargetSelector.GetTarget(1100, DamageType.Physical);
+                var _target = TargetSelector2.GetTarget(Program._Player.GetAutoAttackRange(), DamageType.Physical);
 
                 if (_target == null || !_target.IsValid)
                     return;
@@ -189,13 +221,25 @@ namespace VnHarry_AIO.Marksman
                         _E.Cast(priorityTarget);
                     }
                 }
+
                 if (Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue && _Q.IsReady())
                 {
+                    foreach (var qTarget in HeroManager.Enemies.Where(x => x.IsValidTarget(Program._Player.GetAutoAttackRange() + _Q.Range)))
+                    {
+                        if (qTarget.Buffs.Any(buff => buff.Name == "vaynesilvereddebuff" && buff.Count == 2))
+                        {
+                            _Q.Cast(qTarget.Position);
+                        }
+                    }
+
                     if (Program._Player.Distance(_target.Position) > Program._Player.GetAutoAttackRange() && Program._Player.Distance(_target.Position) < (Program._Player.GetAutoAttackRange() + _Q.Range + 50))
                     {
-                        _Q.Cast(_target.Position);
+                        if (_Q.IsReady())
+                        {
+                            _Q.Cast(_target.Position);
+                        }
                     }
-                    else { _Q.Cast(Game.CursorPos); }
+                    _Q.Cast(Game.CursorPos);
                 }
             }
             catch
@@ -214,15 +258,33 @@ namespace VnHarry_AIO.Marksman
 
                 if (Variables.Config["draw.e"].Cast<CheckBox>().CurrentValue && _E.IsReady())
                 {
-                    foreach (var enemy in ObjectManager.Get<AIHeroClient>().Where(a => a.IsEnemy).Where(a => !a.IsDead).Where(a => _E.IsInRange(a)))
+                    //foreach (var enemy in ObjectManager.Get<AIHeroClient>().Where(a => a.IsEnemy).Where(a => !a.IsDead).Where(a => _E.IsInRange(a)))
+                    //{
+                    //    var condemnPos = Program._Player.Position.Extend(enemy.Position, Program._Player.Distance(enemy) + 470 - 20);
+                    //
+                    //    var realStart = Drawing.WorldToScreen(enemy.Position);
+                     //   var realEnd = Drawing.WorldToScreen(condemnPos.To3D());
+                    //
+                     //   Drawing.DrawLine(realStart, realEnd, 2f, System.Drawing.Color.Red);
+                      //  new Circle() { Color = System.Drawing.Color.Red, Radius = 60, BorderWidth = 2f }.Draw(condemnPos.To3D());
+                    //}//
+
+                    foreach (var enemy in HeroManager.Enemies.Where(hero => hero.IsValidTarget(1100)).Where(a => !a.IsDead))
                     {
-                        var condemnPos = Program._Player.Position.Extend(enemy.Position, Program._Player.Distance(enemy) + 470 - 20);
-
                         var realStart = Drawing.WorldToScreen(enemy.Position);
-                        var realEnd = Drawing.WorldToScreen(condemnPos.To3D());
-
-                        Drawing.DrawLine(realStart, realEnd, 2f, System.Drawing.Color.Red);
-                        new Circle() { Color = System.Drawing.Color.Red, Radius = 60, BorderWidth = 2f }.Draw(condemnPos.To3D());
+                        
+                        int pushDist = 425;
+                        for (int i = 0; i < pushDist; i += (int)enemy.BoundingRadius)
+                        {
+                            Vector3 loc3 = enemy.Position.To2D().Extend(Program._Player.Position.To2D(), -i).To3D();
+                            if (loc3.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Wall) || loc3.ToNavMeshCell().CollFlags.HasFlag(CollisionFlags.Building))
+                            {
+                                var realEnd = Drawing.WorldToScreen(loc3);
+                                Drawing.DrawLine(realStart, realEnd, 2f, System.Drawing.Color.Yellow);
+                                new Circle() { Color = System.Drawing.Color.Yellow, Radius = enemy.BoundingRadius, BorderWidth = 2f }.Draw(loc3);
+  
+                            }
+                        }
                     }
                 }
             }
