@@ -85,8 +85,10 @@
     <Compile Include="Marksman\Vayne.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\AutoPathing.cs" />
     <Compile Include="Utilities\DamageIndicator.cs" />
     <Compile Include="Utilities\TargetSelector.cs" />
+    <Compile Include="Utilities\Utils.cs" />
     <Compile Include="Utilities\VnHarryDrawLogic.cs" />
     <Compile Include="Utilities\VnHarryFarmLogic.cs" />
     <Compile Include="Utilities\VnHarryWalker.cs" />

@@ -11,7 +11,7 @@ namespace VnHarry_AIO.Utilities
     {
         public static void init()
         {
-            Game.OnUpdate += Game_OnUpdate;
+            //Game.OnUpdate += Game_OnUpdate;
         }
 
         public static bool IsUnderTurret(Vector3 position)

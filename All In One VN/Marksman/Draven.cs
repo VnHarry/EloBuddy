@@ -247,32 +247,25 @@ namespace VnHarry_AIO.Marksman
                         if (IsUnderTurret(Program._Player.ServerPosition) && IsUnderTurret(bestReticle.Object.Position))
                         {
                             LastAxeMoveTime = Game.Time;
-                            //Chat.Print("A");
-                            //Chat.Print("Player Postition: " + Program._Player.Position);
-                            //Chat.Print("bestReticle Position: " + bestReticle.Object.Position);
+                            
                             //Orbwalker.OrbwalkTo(bestReticle.Object.Position);
-                            //AutoPathing.DoPath(bestReticle.Object.Position.To2D());
+                            AutoPathing.DoPath(bestReticle.Object.Position.To2D());
                         }
                         else if (!IsUnderTurret(bestReticle.Object.Position))
                         {
                             LastAxeMoveTime = Game.Time;
-                            //Chat.Print("B");
-                            //Chat.Print("Player Postition: " + Program._Player.Position);
-                            //Chat.Print("bestReticle Position: " + bestReticle.Object.Position);
+                            
+                            
                             //Orbwalker.OrbwalkTo(bestReticle.Object.Position);
-                            //Orbwalker.
-                            //AutoPathing.DoPath(bestReticle.Object.Position.To2D());
-                            //Orbwalker.OrbwalkTo(bestReticle.Object.Position);
+                            AutoPathing.DoPath(bestReticle.Object.Position.To2D());
                         }
                     }
                     else
                     {
                         LastAxeMoveTime = Game.Time;
-                        //Chat.Print("C");
-                        //Chat.Print("Player Postition: " + Program._Player.Position);
-                        //Chat.Print("bestReticle Position: " + bestReticle.Object.Position);
+                      
                         //Orbwalker.OrbwalkTo(bestReticle.Object.Position);
-                        //AutoPathing.DoPath(bestReticle.Object.Position.To2D());
+                        AutoPathing.DoPath(bestReticle.Object.Position.To2D());
                     }
                 }
                 else

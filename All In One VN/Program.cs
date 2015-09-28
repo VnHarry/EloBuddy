@@ -37,14 +37,7 @@ namespace VnHarry_AIO
                 Console.WriteLine(e);
             }
         }
-        public static string GetProductVersion()
-        {
-            var attribute = (AssemblyVersionAttribute)Assembly
-              .GetExecutingAssembly()
-              .GetCustomAttributes(typeof(AssemblyVersionAttribute), true)
-              .Single();
-            return attribute.Version;
-        }
+      
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
             TargetSelector2.init();
@@ -54,7 +47,7 @@ namespace VnHarry_AIO
 
             Variables.InfoMenu = MainMenu.AddMenu("VnHarry AIO", "MarksmanBuddy");
             Variables.InfoMenu.AddGroupLabel("VnHarry Tất cả trong một");
-            Variables.InfoMenu.AddLabel("Version: " + GetProductVersion());
+            Variables.InfoMenu.AddLabel("Version: " + "1.0.0.3");
             Variables.InfoMenu.AddSeparator();
             Variables.InfoMenu.AddLabel("Danh sách tướng hỗ trợ: ");
             Variables.InfoMenu.AddLabel("Corki ");
