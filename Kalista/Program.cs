@@ -172,6 +172,7 @@ namespace VnHarry_AIO
             Variables.HarassMode = Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Harass);
             Variables.LaneClearMode = Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear);
             Variables.LastHitMode = Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LastHit);
+            Variables.NoneMode = Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.None);
         }
     }
 }

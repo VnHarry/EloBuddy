@@ -92,8 +92,8 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.Add("killsteal.e", new CheckBox("Use E"));
             Variables.Config.AddGroupLabel("LaneClear");
             Variables.Config.Add("laneclear.e", new CheckBox("Use E"));
-            Variables.Config.Add("LaneClear.eClearCount", new Slider("If Can Kill Minion >= ", 2, 1, 5));
-            Variables.Config.Add("LaneClear.mana", new Slider("LaneClear Mana Manager ", 20, 0, 100));
+            Variables.Config.Add("laneclear.eClearCount", new Slider("If Can Kill Minion >= ", 2, 1, 5));
+            Variables.Config.Add("laneclear.mana", new Slider("LaneClear Mana Manager ", 20, 0, 100));
             Variables.Config.AddGroupLabel("Harass");
             Variables.Config.Add("harass.q", new CheckBox("Use Q", true));
             Variables.Config.Add("harass.e", new CheckBox("Use E"));
@@ -199,8 +199,8 @@ namespace VnHarry_AIO.Marksman
 
         private void Clear()
         {
-            var manaSlider = Variables.Config["harass.mana"].Cast<Slider>().CurrentValue;
-            var eClearCount = Variables.Config["harass.eClearCount"].Cast<Slider>().CurrentValue;
+            var manaSlider = Variables.Config["laneclear.mana"].Cast<Slider>().CurrentValue;
+            var eClearCount = Variables.Config["laneclear.eClearCount"].Cast<Slider>().CurrentValue;
             var useE = Variables.Config["laneclear.e"].Cast<CheckBox>().CurrentValue;
             var mns = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Program._Player.ServerPosition.To2D(), _E.Range);
             if (mns.Count == 0)
@@ -264,61 +264,69 @@ namespace VnHarry_AIO.Marksman
 
         private void Combo()
         {
-            var useQ = Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue;
-            var useE = Variables.Config["commbo.e"].Cast<CheckBox>().CurrentValue;
-            var useR = Variables.Config["commbo.r"].Cast<CheckBox>().CurrentValue;
-            var supportPercent = Variables.Config["misc.savePercent"].Cast<Slider>().CurrentValue;
-            var rCount = Variables.Config["commbo.rCount"].Cast<Slider>().CurrentValue;
-            var rAbleTarget = TargetSelector2.GetTarget(_E.Range, DamageType.Physical);
-            float rEnemyCount = Program._Player.CountEnemiesInRange(_R.Range);
-
-            var QTarget = TargetSelector2.GetTarget(_Q.Range, DamageType.Physical);
-
-            if (_Q.IsReady() && useQ && QTarget.IsValidTarget())
+            try
             {
-                _Q.Cast(QTarget);
-            }
-            if (_E.IsReady() && useE)
-            {
-                foreach (var enemy in HeroManager.Enemies.Where(hero => hero.IsValidTarget(_E.Range) &&
-                    !undyBuff(hero) && !hero.HasBuffOfType(BuffType.SpellShield)))
+                var useQ = Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue;
+                var useE = Variables.Config["commbo.e"].Cast<CheckBox>().CurrentValue;
+                var useR = Variables.Config["commbo.r"].Cast<CheckBox>().CurrentValue;
+                var supportPercent = Variables.Config["misc.savePercent"].Cast<Slider>().CurrentValue;
+                var rCount = Variables.Config["commbo.rCount"].Cast<Slider>().CurrentValue;
+                var rAbleTarget = TargetSelector2.GetTarget(_E.Range, DamageType.Physical);
+                float rEnemyCount = Program._Player.CountEnemiesInRange(_R.Range);
+
+                var QTarget = TargetSelector2.GetTarget(_Q.Range, DamageType.Physical);
+
+                if (QTarget != null && _Q.IsReady() && useQ && QTarget.IsValidTarget())
                 {
-                    if (enemy.Health < GetTotalDamage(enemy))
+                    _Q.Cast(QTarget);
+                }
+                if (_E.IsReady() && useE)
+                {
+                    foreach (var enemy in HeroManager.Enemies.Where(hero => hero.IsValidTarget(_E.Range) &&
+                        !undyBuff(hero) && !hero.HasBuffOfType(BuffType.SpellShield)))
                     {
-                        _E.Cast();
+                        if (enemy.Health < GetTotalDamage(enemy))
+                        {
+                            _E.Cast();
+                        }
+                    }
+                }
+                if (_R.IsReady() && useR)
+                {
+                    foreach (var ally in HeroManager.Allies.Where(ally => ally.IsValidTarget(_R.Range) && ally.HasBuff("kalistacoopstrikeally")))
+                    {
+                        if (ally.HealthPercent < supportPercent) // Save Support
+                        {
+                            _R.Cast();
+                        }
+
+                        if (rAbleTarget != null && rAbleTarget.Distance(Program._Player.Position) > _E.Range && rAbleTarget.Distance(Program._Player.Position) < _R.Range
+                            && ally.HealthPercent > supportPercent && rEnemyCount <= 2 && nontankySupport.Contains(ally.ChampionName)) // Non-Tanky Champs
+                        {
+                            _R.Cast();
+                        }
+
+                        if (rAbleTarget != null && rAbleTarget.Distance(Program._Player.Position) > _E.Range && rAbleTarget.Distance(Program._Player.Position) < _R.Range
+                            && rEnemyCount <= 2 && Marksman.Contains(ally.ChampionName)
+                            && ally.HealthPercent > supportPercent) // Adc Focus R
+                        {
+                            _R.Cast();
+                        }
+
+                        if (rAbleTarget != null && rAbleTarget.Distance(Program._Player.Position) > _E.Range && rAbleTarget.Distance(Program._Player.Position) < _R.Range
+                            && rEnemyCount >= rCount && tankySupport.Contains(ally.ChampionName) // Tanky vs Everyone
+                            && ally.HealthPercent > supportPercent)
+                        {
+                            _R.Cast();
+                        }
                     }
                 }
             }
-            if (_R.IsReady() && useR)
+            catch (Exception ex)
             {
-                foreach (var ally in HeroManager.Allies.Where(ally => ally.IsValidTarget(_R.Range) && ally.HasBuff("kalistacoopstrikeally")))
-                {
-                    if (ally.HealthPercent < supportPercent) // Save Support
-                    {
-                        _R.Cast();
-                    }
-
-                    if (rAbleTarget.Distance(Program._Player.Position) > _E.Range && rAbleTarget.Distance(Program._Player.Position) < _R.Range
-                        && ally.HealthPercent > supportPercent && rEnemyCount <= 2 && nontankySupport.Contains(ally.ChampionName)) // Non-Tanky Champs
-                    {
-                        _R.Cast();
-                    }
-
-                    if (rAbleTarget.Distance(Program._Player.Position) > _E.Range && rAbleTarget.Distance(Program._Player.Position) < _R.Range
-                        && rEnemyCount <= 2 && Marksman.Contains(ally.ChampionName)
-                        && ally.HealthPercent > supportPercent) // Adc Focus R
-                    {
-                        _R.Cast();
-                    }
-
-                    if (rAbleTarget.Distance(Program._Player.Position) > _E.Range && rAbleTarget.Distance(Program._Player.Position) < _R.Range
-                        && rEnemyCount >= rCount && tankySupport.Contains(ally.ChampionName) // Tanky vs Everyone
-                        && ally.HealthPercent > supportPercent)
-                    {
-                        _R.Cast();
-                    }
-                }
+                Chat.Print("Combo: " + ex.Message);
             }
+           
         }
 
         public static void immobileQ()
@@ -406,11 +414,11 @@ namespace VnHarry_AIO.Marksman
                 }
                 if (Variables.Config["draw.e"].Cast<CheckBox>().CurrentValue && _W.IsReady() && _E.Level >= 1)
                 {
-                    new Circle { Color = System.Drawing.Color.Red, BorderWidth = 1, Radius = _E.Range }.Draw(Player.Instance.Position);
+                    new Circle { Color = System.Drawing.Color.OrangeRed, BorderWidth = 1, Radius = _E.Range }.Draw(Player.Instance.Position);
                 }
                 if (Variables.Config["draw.r"].Cast<CheckBox>().CurrentValue && _R.IsReady() && _R.Level >= 1)
                 {
-                    new Circle { Color = System.Drawing.Color.Red, BorderWidth = 1, Radius = _R.Range }.Draw(Player.Instance.Position);
+                    new Circle { Color = System.Drawing.Color.DarkRed, BorderWidth = 1, Radius = _R.Range }.Draw(Player.Instance.Position);
                 }
             }
         }
