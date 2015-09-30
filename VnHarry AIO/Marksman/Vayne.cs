@@ -46,7 +46,7 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.Add("commbo.rsminenemiesforr", new Slider("Minimum heros use R: ", 2, 1, 5));
             Variables.Config.AddGroupLabel(MessageText.txtHarass);
             Variables.Config.Add(MessageText.uharassQ, new CheckBox(MessageText.txtharassQ, false));
-            Variables.Config.Add(MessageText.uharassMana, new CheckBox(MessageText.txtharassMana));
+            Variables.Config.Add(MessageText.uharassMana, new Slider(MessageText.txtharassMana));
             Variables.Config.AddGroupLabel("Draw");
             Variables.Config.Add(MessageText.udrawQ, new CheckBox(MessageText.txtdrawQ));
             Variables.Config.Add(MessageText.udrawE, new CheckBox(MessageText.txtdrawE));

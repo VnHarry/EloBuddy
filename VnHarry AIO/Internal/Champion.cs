@@ -1,5 +1,5 @@
-﻿using System.Drawing;
-using EloBuddy;
+﻿using EloBuddy;
+using System.Drawing;
 
 namespace VnHarry_AIO.Internal
 {
@@ -18,6 +18,5 @@ namespace VnHarry_AIO.Internal
             Variables.Config.AddGroupLabel("Tướng không hỗ trợ");
             Variables.Config.AddLabel("Tướng này chưa được phát triển");
         }
-
     }
 }

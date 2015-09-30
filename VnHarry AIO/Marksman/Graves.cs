@@ -49,7 +49,7 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.AddGroupLabel(MessageText.txtHarass);
             Variables.Config.Add(MessageText.uharassQ, new CheckBox(MessageText.txtharassQ));
             Variables.Config.AddGroupLabel(MessageText.txtLaneClear);
-            Variables.Config.Add(MessageText.ulaneclearMana, new CheckBox(MessageText.txtlaneclearMana));
+            Variables.Config.Add(MessageText.ulaneclearMana, new Slider(MessageText.txtlaneclearMana));
             Variables.Config.AddGroupLabel(MessageText.txtMisc);
             Variables.Config.Add("misc.antigapcloser", new CheckBox("Use E in Gapcloser", true));
             Variables.Config.AddGroupLabel(MessageText.txtDraw);
