@@ -1,0 +1,16 @@
+C:\Game\EloBuddy Project\All In One\bin\Debug\VnHarry AIO.exe.config
+C:\Game\EloBuddy Project\All In One\bin\Debug\VnHarry AIO.exe
+C:\Game\EloBuddy Project\All In One\bin\Debug\VnHarry AIO.pdb
+C:\Game\EloBuddy Project\All In One\bin\Debug\SharpDX.Direct3D9.dll
+C:\Game\EloBuddy Project\All In One\bin\Debug\Newtonsoft.Json.dll
+C:\Game\EloBuddy Project\All In One\obj\Debug\VnHarry AIO.csprojResolveAssemblyReference.cache
+C:\Game\EloBuddy Project\All In One\obj\Debug\VnHarry AIO.exe
+C:\Game\EloBuddy Project\All In One\obj\Debug\VnHarry AIO.pdb
+C:\Game\EloBuddy Project\All In One VN\bin\Debug\VnHarry AIO.exe.config
+C:\Game\EloBuddy Project\All In One VN\bin\Debug\VnHarry AIO.exe
+C:\Game\EloBuddy Project\All In One VN\bin\Debug\VnHarry AIO.pdb
+C:\Game\EloBuddy Project\All In One VN\bin\Debug\SharpDX.Direct3D9.dll
+C:\Game\EloBuddy Project\All In One VN\bin\Debug\Newtonsoft.Json.dll
+C:\Game\EloBuddy Project\All In One VN\obj\Debug\VnHarry AIO.csprojResolveAssemblyReference.cache
+C:\Game\EloBuddy Project\All In One VN\obj\Debug\VnHarry AIO.exe
+C:\Game\EloBuddy Project\All In One VN\obj\Debug\VnHarry AIO.pdb
