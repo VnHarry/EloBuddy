@@ -7,7 +7,6 @@ using System;
 using System.Linq;
 using VnHarry_AIO.Internal;
 using VnHarry_AIO.Utilities;
-using VnHarry_AIO.Internal;
 
 namespace VnHarry_AIO.Marksman
 {
@@ -161,6 +160,7 @@ namespace VnHarry_AIO.Marksman
             }
             immobileQ();
             KillSteal();
+            KillBaronDragon();
         }
 
         private void Jungle()
@@ -304,6 +304,28 @@ namespace VnHarry_AIO.Marksman
                     {
                         var pred = _Q.GetPrediction(enemy);
                         _Q.Cast(pred.CastPosition);
+                    }
+                }
+            }
+        }
+
+        private static void KillBaronDragon()
+        {
+            //m.BaseSkinName.Contains("Dragon") || m.BaseSkinName.Contains("Baron")
+            var mns = EntityManager.GetJungleMonsters(Program._Player.ServerPosition.To2D(), _E.Range);
+
+            if (_E.IsReady())
+            {
+                var mir = mns.Where(m => _E.IsInRange(m)).ToArray();
+                foreach (var m in mir)
+                {
+                    if (m.BaseSkinName.Contains("Dragon") || m.BaseSkinName.Contains("Baron"))
+                    {
+                        if (m.Health < GetTotalDamage(m))
+                        {
+                            _E.Cast();
+                            break;
+                        }
                     }
                 }
             }
