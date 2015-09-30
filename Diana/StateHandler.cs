@@ -251,14 +251,19 @@ namespace VnHarry_Diana
             var qMinion = qMinions.Find(minionQ => minionQ.IsValidTarget());
 
             if (useQ && Program.Q.IsReady())
-            // && Program._Player. >= countQ)
             {
-                Program.Q.Cast(qMinion);
+                var mline = Program.Q.GetPrediction(qMinion);
+                if (mline.GetCollisionObjects<Obj_AI_Minion>().Count() >= countQ)
+                {
+                    Program.Q.Cast(qMinion);
+                }
+               
             }
 
             if (useW && Program.W.IsReady())
             //  && spells[Spells.W].GetCircularFarmLocation(minions).MinionsHit >= countW)
             {
+
                 Program.W.Cast();
             }
 

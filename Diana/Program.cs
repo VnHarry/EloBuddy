@@ -121,18 +121,20 @@ namespace VnHarry_Diana
         }
         public static float QDamage(Obj_AI_Base target)
         {
-            return Program._Player.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float)(new[] { 60, 95, 130, 165, 200 }[Q.Level] + 0.7 * _Player.FlatMagicDamageMod));
+                 
+              return Program._Player.CalculateDamageOnUnit(target, DamageType.Magical,
+                (float)(new[] { 60, 95, 130, 165, 200 }[Q.Level - 1] + 0.7 * _Player.FlatMagicDamageMod));
+           
         }
         public static float WDamage(Obj_AI_Base target)
         {
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float)(new[] { 66, 102, 138, 174, 210 * 3 }[W.Level] + 0.6 * _Player.FlatMagicDamageMod));
+                (float)(new[] { 66, 102, 138, 174, 210}[W.Level - 1] + 0.6 * _Player.FlatMagicDamageMod));
         }
         public static float RDamage(Obj_AI_Base target)
         {
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Magical,
-                (float)(new[] { 100, 160, 220 }[R.Level] + 0.6 * _Player.FlatMagicDamageMod));
+                (float)(new[] { 100, 160, 220 }[R.Level - 1] + 0.6 * _Player.FlatMagicDamageMod));
         }
         private static void Drawing_OnDraw(EventArgs args)
         {
