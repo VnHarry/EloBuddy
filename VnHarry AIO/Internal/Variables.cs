@@ -23,5 +23,9 @@ namespace VnHarry_AIO.Internal
         {
             return Config[pString].Cast<Slider>().CurrentValue;
         }
+        public static bool GetKeyConfig(string pString)
+        {
+            return Config[pString].Cast<KeyBind>().CurrentValue;
+        }
     }
 }

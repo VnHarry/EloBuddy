@@ -48,6 +48,7 @@ namespace VnHarry_AIO
             Variables.InfoMenu.AddSeparator();
             Variables.InfoMenu.AddLabel("Supported Champions: ");
             Variables.InfoMenu.AddLabel("Ashe ");
+            Variables.InfoMenu.AddLabel("Caitlyn ");
             Variables.InfoMenu.AddLabel("Corki ");
             Variables.InfoMenu.AddLabel("Draven ");
             Variables.InfoMenu.AddLabel("Graves ");
@@ -85,7 +86,7 @@ namespace VnHarry_AIO
                     break;
 
                 case "caitlyn":
-                    ChampionPlugin = new Champion();
+                    ChampionPlugin = new Caitlyn();
                     break;
 
                 case "corki":

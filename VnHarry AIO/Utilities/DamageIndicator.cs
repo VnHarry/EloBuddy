@@ -10,13 +10,13 @@ namespace VnHarry_AIO.Utilities
     public static class DamageIndicator
     {
         private const int BarWidth = 104;
-        private const int LineThickness = 9;
+        private const int LineThickness = 10;
 
         public delegate float DamageToUnitDelegate(AIHeroClient hero);
 
         private static DamageToUnitDelegate DamageToUnit { get; set; }
 
-        private static readonly Vector2 BarOffset = new Vector2(10, 25);
+        private static readonly Vector2 BarOffset = new Vector2(-10, 12);
 
         private static System.Drawing.Color _drawingColor;
         public static System.Drawing.Color DrawingColor
@@ -31,11 +31,11 @@ namespace VnHarry_AIO.Utilities
         {
             // Apply needed field delegate for damage calculation
             DamageToUnit = damageToUnit;
-            DrawingColor = System.Drawing.Color.Green;
+            DrawingColor = System.Drawing.Color.LightGreen;
             Enabled = true;
 
             // Register event handlers
-            Drawing.OnDraw += Drawing_OnDraw;
+            Drawing.OnEndScene += Drawing_OnDraw;
         }
 
         private static void Drawing_OnDraw(EventArgs args)
