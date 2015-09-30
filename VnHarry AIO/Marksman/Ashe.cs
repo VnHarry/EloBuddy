@@ -114,7 +114,7 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.AddGroupLabel("Don't use R on");
             foreach (var enemy in HeroManager.Enemies)
             {
-                Variables.Config.Add("Dont_R" + enemy.ChampionName, new CheckBox(enemy.ChampionName));
+                Variables.Config.Add("Dont_R" + enemy.ChampionName, new CheckBox(enemy.ChampionName, false));
             }
             Variables.Config.AddGroupLabel(MessageText.txtCombo);
             Variables.Config.Add(MessageText.ucomboQ, new CheckBox(MessageText.txtcomboQ));
@@ -191,32 +191,37 @@ namespace VnHarry_AIO.Marksman
                         _Q.Cast();
                 }
             }
+            
             var Wtarget = TargetSelector2.GetTarget(_W.Range, DamageType.Physical);
             if (useW && _W.IsReady())
             {
+                Chat.Print("source");
                 _W.Cast(Wtarget);
             }
                 
         }
         private void CheckKs()
         {
-            foreach (var target in HeroManager.Enemies)
+            foreach (var _target in HeroManager.Enemies.Where(u => u.IsValidTarget()))
             {
+                if (_target == null || _target.IsDead || _target.Health <= 0 || !_target.IsValidTarget())
+                    return;
                 //W
-                if (Program._Player.Distance(target) <= _W.Range && Program._Player.GetSpellDamage(target, SpellSlot.W) > target.Health && _W.IsReady())
+                if (Program._Player.Distance(_target) <= _W.Range && Program._Player.GetSpellDamage(_target, SpellSlot.W) > _target.Health && _W.IsReady())
                 {
-                    _W.Cast(target);
+                    
+                    _W.Cast(_target);
                     return;
                 }
 
                 //R
-                if (Program._Player.Distance(target) <= Variables.GetSliderConfig("R_Max_Range") && Program._Player.GetSpellDamage(target, SpellSlot.R) > target.Health && _R.IsReady() && Variables.GetCheckBoxConfig("misc.ksR"))
+                if (Program._Player.Distance(_target) <= Variables.GetSliderConfig("R_Max_Range") && Program._Player.GetSpellDamage(_target, SpellSlot.R) > _target.Health && _R.IsReady() && Variables.GetCheckBoxConfig("misc.ksR"))
                 {
                     foreach (var enemy in HeroManager.Enemies)
                     {
                         if (!Variables.GetCheckBoxConfig("Dont_R" + enemy.ChampionName))
                         {
-                            _R.Cast(target);
+                            _R.Cast(_target);
                         }
                     }
                     return;
