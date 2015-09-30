@@ -94,12 +94,7 @@ namespace VnHarry_AIO.Marksman
                     if (qMin <= QStacks)
                         _Q.Cast();
               
-            }
-
-            if (useW)
-            {
-               
-            }
+            }   
         }
         public override sealed void _SetupSpells()
         {
@@ -205,7 +200,7 @@ namespace VnHarry_AIO.Marksman
         }
         private void CheckKs()
         {
-            foreach (Obj_AI_Base target in ObjectManager.Get<Obj_AI_Base>().Where(x => x.IsValidTarget(Variables.GetSliderConfig("R_Max_Range"))).OrderByDescending(GetComboDamage))
+            foreach (var target in HeroManager.Enemies)
             {
                 //W
                 if (Program._Player.Distance(target) <= _W.Range && Program._Player.GetSpellDamage(target, SpellSlot.W) > target.Health && _W.IsReady())
