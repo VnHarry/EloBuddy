@@ -8,6 +8,7 @@ namespace VnHarry_AIO.Internal
     {
         public static Menu InfoMenu;
         public static Menu Config;
+        public static Menu ChampInfo;
         public static Menu Activator;
         public static bool ComboMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Combo;
         public static bool HarassMode = Orbwalker.ActiveModesFlags == Orbwalker.ActiveModes.Harass;

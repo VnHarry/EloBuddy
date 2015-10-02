@@ -52,6 +52,9 @@ namespace VnHarry_AIO.Marksman
 
         public override sealed void _SetupMenu()
         {
+            Variables.ChampInfo.AddGroupLabel(Program._Player.ChampionName);
+            Variables.ChampInfo.AddLabel("Version: " + "1.0.0.5");
+
             Variables.Config.AddGroupLabel("Combo");
             Variables.Config.Add(MessageText.ucomboQ, new CheckBox(MessageText.txtcomboQ));
             Variables.Config.Add(MessageText.ucomboE, new CheckBox(MessageText.txtcomboE));
@@ -62,8 +65,8 @@ namespace VnHarry_AIO.Marksman
             Variables.Config.Add("killsteal.e", new CheckBox("Use E"));
             Variables.Config.AddGroupLabel("LaneClear");
             Variables.Config.Add("laneclear.e", new CheckBox("Use E"));
-            Variables.Config.Add("LaneClear.eClearCount", new Slider("If Can Kill Minion >= ", 2, 1, 5));
-            Variables.Config.Add("LaneClear.mana", new Slider("LaneClear Mana Manager ", 20, 0, 100));
+            Variables.Config.Add("laneclear.eClearCount", new Slider("If Can Kill Minion >= ", 2, 1, 5));
+            Variables.Config.Add("laneclear.mana", new Slider("LaneClear Mana Manager ", 20, 0, 100));
             Variables.Config.AddGroupLabel("Harass");
             Variables.Config.Add("harass.q", new CheckBox("Use Q", true));
             Variables.Config.Add("harass.e", new CheckBox("Use E"));
@@ -100,7 +103,6 @@ namespace VnHarry_AIO.Marksman
             return Program._Player.CalculateDamageOnUnit(target, DamageType.Physical,
                 (float)(new[] { 10, 70, 130, 190, 250 }[_Q.Level - 1] + 1 * Program._Player.FlatPhysicalDamageMod));
         }
-
         public static float GetTotalDamage(Obj_AI_Base target)
         {
             var damage = 0f;
@@ -108,6 +110,7 @@ namespace VnHarry_AIO.Marksman
             if (_E.IsReady())
             {
                 damage += CustomCalculator(target);
+               
             }
             var stacz = CustomCalculator(target);
             float edamagedraw = stacz * 100 / target.Health;
@@ -125,6 +128,9 @@ namespace VnHarry_AIO.Marksman
             return (float)damage;
         }
 
+       
+       
+
         public static float CustomCalculator(Obj_AI_Base target, int customStacks = -1)
         {
             int buff = target.GetBuffCount("KalistaExpungeMarker");
@@ -136,6 +142,9 @@ namespace VnHarry_AIO.Marksman
                        (RRPS[_E.Level - 1] + RRPSM[_E.Level - 1] * Program._Player.TotalAttackDamage);
 
                 return (float)Program._Player.CalculateDamageOnUnit(target, DamageType.Physical, tDamage);
+
+                //return RRD[_E.Level - 1] + buff * RRPS[_E.Level - 1] +
+                 //      Program._Player.TotalAttackDamage * (RRDM[_E.Level - 1] + buff * RRPSM[_E.Level - 1]);
             }
 
             return 0;
@@ -160,7 +169,7 @@ namespace VnHarry_AIO.Marksman
             }
             immobileQ();
             KillSteal();
-            KillBaronDragon();
+            stealJungle();
         }
 
         private void Jungle()
@@ -170,10 +179,17 @@ namespace VnHarry_AIO.Marksman
 
         private void Clear()
         {
-            var manaSlider = Variables.Config["harass.mana"].Cast<Slider>().CurrentValue;
-            var eClearCount = Variables.Config["harass.eClearCount"].Cast<Slider>().CurrentValue;
+            var manaSlider = Variables.Config["laneclear.mana"].Cast<Slider>().CurrentValue;
+            var eClearCount = Variables.Config["laneclear.eClearCount"].Cast<Slider>().CurrentValue;
             var useE = Variables.Config["laneclear.e"].Cast<CheckBox>().CurrentValue;
+
             var mns = EntityManager.GetLaneMinions(EntityManager.UnitTeam.Enemy, Program._Player.ServerPosition.To2D(), _E.Range);
+
+            if(mns == null)
+            {
+                return;
+            }
+
             if (mns.Count == 0)
             {
                 return;
@@ -235,9 +251,9 @@ namespace VnHarry_AIO.Marksman
 
         private void Combo()
         {
-            var useQ = Variables.Config["commbo.q"].Cast<CheckBox>().CurrentValue;
-            var useE = Variables.Config["commbo.e"].Cast<CheckBox>().CurrentValue;
-            var useR = Variables.Config["commbo.r"].Cast<CheckBox>().CurrentValue;
+            var useQ = Variables.Config[MessageText.ucomboQ].Cast<CheckBox>().CurrentValue;
+            var useE = Variables.Config[MessageText.ucomboE].Cast<CheckBox>().CurrentValue;
+            var useR = Variables.Config[MessageText.ucomboR].Cast<CheckBox>().CurrentValue;
             var supportPercent = Variables.Config["misc.savePercent"].Cast<Slider>().CurrentValue;
             var rCount = Variables.Config["commbo.rCount"].Cast<Slider>().CurrentValue;
             var rAbleTarget = TargetSelector2.GetTarget(_E.Range, DamageType.Physical);
@@ -309,28 +325,49 @@ namespace VnHarry_AIO.Marksman
             }
         }
 
-        private static void KillBaronDragon()
+      
+        private static void stealJungle()
         {
-            //m.BaseSkinName.Contains("Dragon") || m.BaseSkinName.Contains("Baron")
-            var mns = EntityManager.GetJungleMonsters(Program._Player.ServerPosition.To2D(), _E.Range);
+            var mobs = EntityManager.GetJungleMonsters(Program._Player.ServerPosition.To2D(), _E.Range);
 
+            if (mobs == null)
+            {
+                return;
+            }
             if (_E.IsReady())
             {
-                var mir = mns.Where(m => _E.IsInRange(m)).ToArray();
-                foreach (var m in mir)
+                foreach (var mob in mobs)
                 {
-                    if (m.BaseSkinName.Contains("Dragon") || m.BaseSkinName.Contains("Baron"))
+                    if (mob.BaseSkinName.Contains("Dragon")
+                                       && mob.Health + 50 + (mob.HPRegenRate / 2) <= GetTotalDamage(mob)) // Dragon E
                     {
-                        if (m.Health < GetTotalDamage(m))
-                        {
-                            _E.Cast();
-                            break;
-                        }
+                        _E.Cast(mob);
+                    }
+
+                    if (mob.BaseSkinName.Contains("Baron")
+                        && mob.Health + 50 + (mob.HPRegenRate / 2) <= GetTotalDamage(mob)) // Baron E
+                    {
+                        _E.Cast();
+                    }
+
+                    if (mob.BaseSkinName.Contains("SRU_Blue")
+                        && mob.Health + 50 + (mob.HPRegenRate / 2) <= GetTotalDamage(mob)) // Blue E
+                    {
+                        _E.Cast();
+                    }
+
+                    if (mob.BaseSkinName.Contains("SRU_Red")
+                        && mob.Health + 50 + (mob.HPRegenRate / 2) <= GetTotalDamage(mob)) // Red E
+                    {
+                        _E.Cast();
                     }
                 }
-            }
-        }
 
+
+            }
+
+
+        }
         private static void KillSteal()
         {
             var qKS = Variables.Config["killsteal.q"].Cast<CheckBox>().CurrentValue;
