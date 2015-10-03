@@ -77,7 +77,10 @@ namespace VnHarry_AIO
             var _Activator = new Core();
             Chat.Print("VnHarry AIO - <font color=\"#FFFFFF\">Loaded</font>", Color.FromArgb(255, 210, 68, 74));
             var championName = ObjectManager.Player.ChampionName.ToLower(CultureInfo.InvariantCulture);
-            Variables.Config = Variables.InfoMenu.AddSubMenu(Player.Instance.ChampionName, Player.Instance.ChampionName);
+
+            Variables.ChampInfo = Variables.InfoMenu.AddSubMenu("Information - " + Player.Instance.ChampionName, "Information - " + Player.Instance.ChampionName);
+            Variables.Config = Variables.InfoMenu.AddSubMenu("Settings - " + Player.Instance.ChampionName, "Settings - " + Player.Instance.ChampionName);
+
             Chat.Print("VnHarry AIO - <font color=\"#FFFFFF\">{0} Loaded</font>", Color.FromArgb(255, 210, 68, 74), ObjectManager.Player.ChampionName);
             switch (championName)
             {
